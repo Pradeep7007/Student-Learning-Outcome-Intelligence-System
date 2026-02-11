@@ -1,10 +1,3 @@
-Love it — this will look very strong on your GitHub profile 👌
-Here’s a **clean, simple, professional README.md** you can directly upload.
-
-You can copy-paste this into your `README.md` file.
-
----
-
 # 🎓 Student Learning Outcome Intelligence System (SLOIS)
 
 An AI-powered system that analyzes student academic data to measure learning outcomes, predict performance, and provide actionable insights for teachers and institutions.
@@ -76,16 +69,15 @@ This project combines **AI, Data Science, and Web Development** to improve acade
 
 ### Frontend
 
-* React.js / Flutter
-* Chart.js / Power BI
+* React.js
 
 ### Backend
 
-* Node.js / Django
+* Node.js
 
 ### Database
 
-* PostgreSQL / Firebase
+* MongoDB
 
 ### AI & Data Science
 
@@ -94,22 +86,6 @@ This project combines **AI, Data Science, and Web Development** to improve acade
 * Pandas
 * NumPy
 * TensorFlow (optional)
-
----
-
-## 📂 Project Structure
-
-```
-SLOIS/
-│
-├── frontend/          # Web or mobile UI
-├── backend/           # API and business logic
-├── models/            # ML models
-├── dataset/           # Sample datasets
-├── notebooks/         # Research & experimentation
-├── docs/              # Documentation
-└── README.md
-```
 
 ---
 
@@ -156,15 +132,3 @@ This project is for academic and research purposes.
 Your Name
 B.Tech in AI & Data Science
 Passionate about AI, Analytics & Intelligent Systems
-
----
-
-If you want, I can also give you:
-
-* 🔥 A more professional “industry-level” README
-* 📊 With badges (GitHub shields)
-* 📦 With deployment instructions
-* 🧪 With API documentation section
-* 🎓 A version tailored for final year project submission
-
-Just tell me what level you want 😄
