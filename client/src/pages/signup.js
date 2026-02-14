@@ -1,6 +1,8 @@
+
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import "./Signup.css";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -9,95 +11,10 @@ const Signup = () => {
     setShowPassword(!showPassword);
   };
 
-  const styles = `
-    @media (max-width: 576px) {
-      .signup-container {
-        padding: 15px;
-      }
-      .brand-icon {
-        width: 45px !important;
-        height: 45px !important;
-      }
-      .card-body {
-        padding: 20px !important;
-      }
-      .signup-title {
-        font-size: 1.5rem;
-      }
-      .signup-subtitle {
-        font-size: 0.85rem;
-      }
-      .form-label {
-        font-size: 0.9rem;
-        margin-bottom: 0.5rem;
-      }
-      .form-control, .form-select, .input-group-text {
-        font-size: 0.95rem;
-        padding: 0.5rem 0.75rem;
-      }
-      .btn {
-        font-size: 0.95rem;
-        padding: 0.5rem;
-      }
-    }
 
-    @media (min-width: 577px) and (max-width: 991px) {
-      .signup-container {
-        padding: 20px;
-      }
-      .brand-icon {
-        width: 55px !important;
-        height: 55px !important;
-      }
-      .card-body {
-        padding: 30px !important;
-      }
-      .signup-title {
-        font-size: 1.8rem;
-      }
-      .signup-subtitle {
-        font-size: 0.9rem;
-      }
-    }
-
-    @media (min-width: 992px) {
-      .signup-container {
-        padding: 30px;
-      }
-      .brand-icon {
-        width: 60px !important;
-        height: 60px !important;
-      }
-      .card-body {
-        padding: 40px !important;
-      }
-      .signup-title {
-        font-size: 2rem;
-      }
-      .signup-subtitle {
-        font-size: 0.95rem;
-      }
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-      border-color: #0d6efd;
-      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-    }
-
-    .card {
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .input-group-text {
-      border-color: #dee2e6;
-    }
-  `;
 
   return (
     <>
-      <style>{styles}</style>
       <div
         className="min-vh-100 d-flex align-items-center justify-content-center signup-container"
         style={{
@@ -107,7 +24,6 @@ const Signup = () => {
         <div className="container-fluid">
           <div className="row justify-content-center">
             <div className="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
-
               {/* Brand Header */}
               <div className="text-center mb-4 mb-md-5">
                 <div
