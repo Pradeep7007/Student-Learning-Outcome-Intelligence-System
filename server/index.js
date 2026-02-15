@@ -1,17 +1,18 @@
-// Entry point for the backend server
+require('dotenv').config();
 const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 5000;
+const cors = require('cors');
+const connect = require('./config/db');
 
-// Middleware
+const authRoutes = require('./routes/auth');
+
+const app = express();
+app.use(cors());
 app.use(express.json());
 
-// TODO: Import and use routes here
+// connect to DB
+connect();
 
-app.get('/', (req, res) => {
-  res.send('API is running');
-});
+app.use('/api/auth', authRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

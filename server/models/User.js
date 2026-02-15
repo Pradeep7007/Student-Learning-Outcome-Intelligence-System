@@ -1,11 +1,15 @@
-// Example user model for MongoDB
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['student', 'staff', 'admin'], required: true },
-}, { timestamps: true });
+const UserSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    role: { type: String, required: true },
+    password: { type: String, required: true },
+    resetToken: { type: String },
+    resetExpires: { type: Date }
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', UserSchema);
