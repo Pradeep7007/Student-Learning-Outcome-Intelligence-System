@@ -115,5 +115,72 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+// Get all students
+router.get('/students', async (req, res) => {
+  try {
+    const students = await StudentDetails.find({}, '-__v');
+    return res.json({ students });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get student count
+router.get('/students/count', async (req, res) => {
+  try {
+    const count = await StudentDetails.countDocuments();
+    return res.json({ count });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update student password
+router.put('/students/:id/password', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+    if (!password) return res.status(400).json({ message: 'Password is required.' });
+    const student = await StudentDetails.findById(id);
+    if (!student) return res.status(404).json({ message: 'Student not found.' });
+    student.password = password;
+    await student.save();
+    return res.json({ message: 'Student password updated' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all staff
+router.get('/staffs', async (req, res) => {
+  try {
+    const staffs = await StaffDetails.find({}, '-__v');
+    return res.json({ staffs });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update staff password
+router.put('/staffs/:id/password', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+    if (!password) return res.status(400).json({ message: 'Password is required.' });
+    const staff = await StaffDetails.findById(id);
+    if (!staff) return res.status(404).json({ message: 'Staff not found.' });
+    staff.password = password;
+    await staff.save();
+    return res.json({ message: 'Staff password updated' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
 

@@ -8,6 +8,7 @@ import Signin from './pages/Signin';
 import Dashboard from './pages/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
 import { Navigate } from 'react-router-dom';
+import Admin from './pages/Admin';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/admin" element={<PrivateRoute><Admin /></PrivateRoute>} />
         <Route path="/" element={<Navigate to="/signin" replace />} />
       </Routes>
     </Router>

@@ -1,0 +1,7 @@
+.admin-row { margin-bottom: 1rem; }
+.admin-card { min-height: 150px; }
+.details-list { max-height: 300px; overflow:auto; }
+
+@media (min-width: 768px) {
+  .admin-card { min-height: 180px; }
+}

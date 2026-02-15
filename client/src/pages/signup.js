@@ -62,6 +62,7 @@ const Signup = () => {
       }
       setMessage(data.message || 'Signup successful');
       setFormData({ name: "", email: "", role: "", password: "", confirmPassword: "" });
+      navigate('/signin');
     } catch (err) {
       console.error(err);
       setMessage('Network error');
