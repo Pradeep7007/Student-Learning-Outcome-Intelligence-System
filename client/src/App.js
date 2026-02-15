@@ -9,6 +9,8 @@ import Dashboard from './pages/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
 import { Navigate } from 'react-router-dom';
 import Admin from './pages/Admin';
+import AdminStudents from './pages/AdminStudents';
+import AdminStaffs from './pages/AdminStaffs';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
         <Route path="/signin" element={<Signin />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
         <Route path="/admin" element={<PrivateRoute><Admin /></PrivateRoute>} />
+        <Route path="/admin/students" element={<PrivateRoute><AdminStudents /></PrivateRoute>} />
+        <Route path="/admin/staffs" element={<PrivateRoute><AdminStaffs /></PrivateRoute>} />
         <Route path="/" element={<Navigate to="/signin" replace />} />
       </Routes>
     </Router>

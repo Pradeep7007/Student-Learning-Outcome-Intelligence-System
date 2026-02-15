@@ -135,10 +135,14 @@ const Signin = () => {
                         setMessage(data.message || 'Login failed');
                         return;
                       }
-                      // store user and navigate to protected dashboard
+                      // store user and navigate according to role
                       if (data.user) setAuth(data.user);
                       setMessage(data.message || 'Login successful');
-                      navigate('/dashboard');
+                      if (data.user && data.user.role === 'admin') {
+                        navigate('/admin');
+                      } else {
+                        navigate('/dashboard');
+                      }
                     } catch (err) {
                       console.error(err);
                       setMessage('Network error');

@@ -15,27 +15,9 @@ const Admin = () => {
     fetch(`${apiBase}/api/auth/students/count`).then(r=>r.json()).then(d=>setStudentCount(d.count||0)).catch(()=>{});
   }, []);
 
-  const loadStudents = async () => {
-    setMessage('');
-    try {
-      const res = await fetch(`${apiBase}/api/auth/students`);
-      const data = await res.json();
-      setStudents(data.students || []);
-      setShowStudents(true);
-      setShowStaffs(false);
-    } catch (e) { setMessage('Failed to load students'); }
-  };
-
-  const loadStaffs = async () => {
-    setMessage('');
-    try {
-      const res = await fetch(`${apiBase}/api/auth/staffs`);
-      const data = await res.json();
-      setStaffs(data.staffs || []);
-      setShowStaffs(true);
-      setShowStudents(false);
-    } catch (e) { setMessage('Failed to load staffs'); }
-  };
+  const navigate = (path) => window.location.href = path;
+  const loadStudents = () => navigate('/admin/students');
+  const loadStaffs = () => navigate('/admin/staffs');
 
   const updateStudentPassword = async (id, password) => {
     if (!password) return setMessage('Password required');
