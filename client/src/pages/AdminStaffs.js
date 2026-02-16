@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import SignOutButton from '../components/SignOutButton';
 
 const AdminStaffs = () => {
   const [staffs, setStaffs] = useState([]);
@@ -33,7 +35,8 @@ const AdminStaffs = () => {
   };
 
   return (
-    <div className="container py-4">
+    <div className="container py-4 position-relative">
+      <SignOutButton />
       <h4>Staff Details</h4>
       <button className="btn btn-sm btn-secondary mb-3" onClick={() => navigate('/admin')}>Back</button>
       {staffs.length === 0 && <p className="text-muted">No staff found.</p>}

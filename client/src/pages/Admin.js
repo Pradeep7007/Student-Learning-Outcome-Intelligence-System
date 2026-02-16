@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import './Admin.css';
+import SignOutButton from '../components/SignOutButton';
 
 const Admin = () => {
   const [studentCount, setStudentCount] = useState(0);
@@ -38,7 +40,8 @@ const Admin = () => {
   };
 
   return (
-    <div className="container py-4">
+    <div className="container py-4 position-relative">
+      <SignOutButton />
       <h3 className="mb-4">Admin Dashboard</h3>
 
       <div className="row admin-row">
