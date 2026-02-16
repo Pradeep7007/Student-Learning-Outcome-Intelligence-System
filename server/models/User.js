@@ -15,4 +15,11 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Pre-save hook to enforce uppercase
+UserSchema.pre('save', function(next) {
+  if (this.name) this.name = this.name.toUpperCase();
+  if (this.email) this.email = this.email.toUpperCase();
+  next();
+});
+
 module.exports = mongoose.model('User', UserSchema);
