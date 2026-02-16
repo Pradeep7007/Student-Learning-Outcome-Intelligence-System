@@ -58,46 +58,7 @@ const Admin = () => {
         </div>
       </div>
 
-      <div className="row admin-row">
-        <div className="col-12 col-md-6 mb-3">
-          <div className="card p-3">
-            <h6>Student Details</h6>
-            <div className="details-list mt-2">
-              {students.length === 0 && <p className="text-muted">No students loaded. Click 'View Student Details'.</p>}
-              {students.map(s => (
-                <div key={s._id} className="border rounded p-2 mb-2">
-                  <div><strong>Name:</strong> {s.name}</div>
-                  <div><strong>Email:</strong> {s.email}</div>
-                  <div><strong>DOB:</strong> {s.dob || 'N/A'}</div>
-                  <div className="mt-2 d-flex gap-2">
-                    <input className="form-control form-control-sm" placeholder="New password" id={`stu-pw-${s._id}`} />
-                    <button className="btn btn-sm btn-primary" onClick={() => updateStudentPassword(s._id, document.getElementById(`stu-pw-${s._id}`).value)}>Change</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="col-12 col-md-6 mb-3">
-          <div className="card p-3">
-            <h6>Staff Details</h6>
-            <div className="details-list mt-2">
-              {staffs.length === 0 && <p className="text-muted">No staff loaded. Click 'View Staff Details'.</p>}
-              {staffs.map(s => (
-                <div key={s._id} className="border rounded p-2 mb-2">
-                  <div><strong>Name:</strong> {s.name}</div>
-                  <div><strong>Email:</strong> {s.email}</div>
-                  <div className="mt-2 d-flex gap-2">
-                    <input className="form-control form-control-sm" placeholder="New password" id={`stf-pw-${s._id}`} />
-                    <button className="btn btn-sm btn-primary" onClick={() => updateStaffPassword(s._id, document.getElementById(`stf-pw-${s._id}`).value)}>Change</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      
 
       {message && <div className="alert alert-info">{message}</div>}
     </div>

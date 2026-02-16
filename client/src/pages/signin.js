@@ -122,34 +122,39 @@ const Signin = () => {
                 {/* Sign In Button */}
                 <div className="d-grid mt-4">
                     <button type="button" className="btn btn-primary fw-bold" onClick={async () => {
-                    setMessage('');
-                    try {
-                      const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-                      const res = await fetch(`${apiBase}/api/auth/login`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, password, role })
-                      });
-                      const data = await res.json();
-                      if (!res.ok) {
-                        setMessage(data.message || 'Login failed');
-                        return;
+                      setMessage('');
+                      try {
+                        const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+                        const res = await fetch(`${apiBase}/api/auth/login`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email, password, role })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                          setMessage(data.message || 'Login failed');
+                          return;
+                        }
+                        // Check if the selected role matches the user's actual role
+                        if (data.user && data.user.role !== role) {
+                          setMessage(`You are registered as a ${data.user.role}. Please select the correct role to sign in.`);
+                          return;
+                        }
+                        // store user and navigate according to role
+                        if (data.user) setAuth(data.user);
+                        setMessage(data.message || 'Login successful');
+                        if (data.user && data.user.role === 'admin') {
+                          navigate('/admin');
+                        } else {
+                          navigate('/dashboard');
+                        }
+                      } catch (err) {
+                        console.error(err);
+                        setMessage('Network error');
                       }
-                      // store user and navigate according to role
-                      if (data.user) setAuth(data.user);
-                      setMessage(data.message || 'Login successful');
-                      if (data.user && data.user.role === 'admin') {
-                        navigate('/admin');
-                      } else {
-                        navigate('/dashboard');
-                      }
-                    } catch (err) {
-                      console.error(err);
-                      setMessage('Network error');
-                    }
-                  }}>
-                    Sign In
-                  </button>
+                    }}>
+                      Sign In
+                    </button>
                 </div>
                 
                 {/* Forgot password toggle */}
