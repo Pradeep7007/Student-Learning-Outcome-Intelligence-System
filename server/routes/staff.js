@@ -81,4 +81,17 @@ router.get('/:studentId', async (req, res) => {
   }
 });
 
+// GET: Retrieve all student records (Sorted by Department)
+router.get('/', async (req, res) => {
+    try {
+        const records = await StaffStudentInfo.find()
+            .populate('studentId', 'name email rollno department')
+            .sort({ department: 1, rollNo: 1 }); // Sort by Dept ASC, then RollNo ASC
+        res.json(records);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 module.exports = router;

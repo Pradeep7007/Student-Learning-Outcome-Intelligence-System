@@ -7,6 +7,8 @@ const StaffDashboard = () => {
   const [totalStudents, setTotalStudents] = useState(0);
   const [deptCounts, setDeptCounts] = useState([]);
   const [studentRecords, setStudentRecords] = useState([]);
+  const [filteredRecords, setFilteredRecords] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [students, setStudents] = useState([]);
   const [showForm, setShowForm] = useState(false);
 
@@ -50,7 +52,10 @@ const StaffDashboard = () => {
 
     fetch(`${apiBase}/api/staff`)
       .then(r => r.json())
-      .then(d => setStudentRecords(d || []));
+      .then(d => {
+        setStudentRecords(d || []);
+        setFilteredRecords(d || []);
+      });
 
     fetch(`${apiBase}/api/auth/students`)
       .then(r => r.json())
@@ -68,6 +73,20 @@ const StaffDashboard = () => {
       setRollNo(student?.rollno || '');
       setDepartment(student?.department || '');
   }
+
+  const handleSearch = (e) => {
+      const term = e.target.value.toLowerCase();
+      setSearchTerm(term);
+      
+      const filtered = studentRecords.filter(record => {
+          const name = record.studentId?.name?.toLowerCase() || '';
+          const roll = record.rollNo?.toLowerCase() || '';
+          const dept = record.department?.toLowerCase() || '';
+          
+          return name.includes(term) || roll.includes(term) || dept.includes(term);
+      });
+      setFilteredRecords(filtered);
+  };
 
   const handleSubjectChange = (key, field, value) => {
       setSubjectData(prev => ({
@@ -149,7 +168,7 @@ const StaffDashboard = () => {
 
       {/* Stats Section */}
       <div className="row mb-4">
-        <div className="col-12 col-md-4 mb-3">
+        <div className="col-12 col-md-3 mb-3">
           <div className="card text-center shadow h-100 border-primary">
             <div className="card-header bg-primary text-white">Total Students</div>
             <div className="card-body d-flex align-items-center justify-content-center">
@@ -159,7 +178,7 @@ const StaffDashboard = () => {
         </div>
 
         {deptCounts.map(d => (
-          <div className="col-12 col-md-4 mb-3" key={d._id}>
+          <div className="col-12 col-md-3 mb-3" key={d._id}>
             <div className="card text-center shadow h-100 border-info">
               <div className="card-header bg-info text-white">Dept: {d._id || 'Unknown'}</div>
               <div className="card-body d-flex align-items-center justify-content-center">
@@ -279,38 +298,54 @@ const StaffDashboard = () => {
       )}
 
       {/* Records Section */}
-      <h2 className="mt-4 mb-3 border-bottom pb-2">Students Records</h2>
-      {studentRecords.length === 0 ? (
-          <p className="text-muted">No records found.</p>
+      <div className="d-flex justify-content-between align-items-center mb-3 mt-4 border-bottom pb-2">
+        <h2 className="mb-0">Students Records</h2>
+        <div className="w-50">
+            <input 
+                type="text" 
+                className="form-control" 
+                placeholder="Search by Name, Roll No, or Department..." 
+                value={searchTerm}
+                onChange={handleSearch}
+            />
+        </div>
+      </div>
+
+      {filteredRecords.length === 0 ? (
+          <p className="text-muted">No records found matching your search.</p>
       ) : (
-          <div className="row">
-            {studentRecords.map(record => (
-              <div className="col-12 mb-3" key={record._id}>
-                <div className="card shadow-sm">
-                  <div className="card-header d-flex justify-content-between">
-                     <span className="fw-bold">{record.studentId?.name} ({record.rollNo})</span>
-                     <span className="text-muted">{record.department}</span>
-                  </div>
-                  <div className="card-body">
-                      <div className="row">
-                          {record.subjects && record.subjects.map((sub, idx) => (
-                              <div className="col-6 col-md-4 col-lg-2 mb-2" key={idx}>
-                                  <div className="border rounded p-2 text-center h-100 bg-light">
-                                      <small className="d-block text-truncate fw-bold mb-1" title={sub.name}>{sub.name}</small>
-                                      <div className="badge bg-success mb-1">Grade: {sub.predictedGrade || '-'}</div>
-                                      <div style={{fontSize: '0.8rem'}}>
-                                          <div>Att: {sub.attendanceHours}h</div>
-                                          <div>Int: {sub.internalMarks}</div>
-                                          <div>Ass: {sub.assignmentMarks}</div>
-                                      </div>
-                                  </div>
-                              </div>
-                          ))}
-                      </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="table-responsive">
+            <table className="table table-striped table-hover shadow-sm">
+                <thead className="table-dark">
+                    <tr>
+                        <th scope="col">Student Name</th>
+                        <th scope="col">Roll No</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Overall Outcome (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {filteredRecords.map(record => {
+                        // Calculate Overall Percentage
+                        const totalObtained = record.subjects?.reduce((acc, sub) => acc + (sub.internalMarks || 0) + (sub.assignmentMarks || 0), 0) || 0;
+                        const totalMax = (record.subjects?.length || 0) * 200;
+                        const percentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) : '0.0';
+                        
+                        return (
+                            <tr key={record._id}>
+                                <td>{record.student?.name || 'N/A'}</td>
+                                <td>{record.rollNo || 'N/A'}</td>
+                                <td>{record.department || 'N/A'}</td>
+                                <td>
+                                    <span className={`badge ${parseFloat(percentage) >= 75 ? 'bg-success' : parseFloat(percentage) >= 50 ? 'bg-warning' : 'bg-danger'}`}>
+                                        {percentage}%
+                                    </span>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
           </div>
       )}
     </div>

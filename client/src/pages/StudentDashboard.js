@@ -39,7 +39,9 @@ const StudentDashboard = () => {
       </div>
       
       <p className="lead">
-        Welcome, {user?.name || 'Student'} <span className="badge bg-secondary">{user?.role || 'student'}</span>
+        Welcome, <span className="fw-bold">{user?.name?.toUpperCase() || 'STUDENT'}</span> 
+        {record?.rollNo && <span className="ms-2">({record.rollNo})</span>}
+        <span className="badge bg-secondary ms-2">{user?.role || 'student'}</span>
       </p>
 
       {loading ? (
@@ -55,22 +57,36 @@ const StudentDashboard = () => {
             </div>
             <div className="card-body">
                 <div className="row mb-4 text-center">
-                    <div className="col-md-4">
-                        <div className="p-3 border rounded bg-light">
+                    <div className="col-md-3">
+                        <div className="p-3 border rounded bg-light h-100">
                             <h5 className="text-muted">Total Days</h5>
                             <h2 className="display-6">120</h2>
                         </div>
                     </div>
-                    <div className="col-md-4">
-                        <div className="p-3 border rounded bg-light">
+                    <div className="col-md-3">
+                        <div className="p-3 border rounded bg-light h-100">
                             <h5 className="text-success">Days Present</h5>
                             <h2 className="display-6 fw-bold">{record.totalDaysPresent}</h2>
                         </div>
                     </div>
-                    <div className="col-md-4">
-                        <div className="p-3 border rounded bg-light">
+                    <div className="col-md-3">
+                        <div className="p-3 border rounded bg-light h-100">
                             <h5 className="text-danger">Leave Days</h5>
                             <h2 className="display-6 fw-bold">{record.leaveDaysCount}</h2>
+                        </div>
+                    </div>
+                    <div className="col-md-3">
+                        <div className="p-3 border rounded bg-light h-100">
+                            <h5 className="text-primary">Overall Outcome</h5>
+                            <h2 className="display-6 fw-bold">
+                                {(() => {
+                                    if (!record.subjects || record.subjects.length === 0) return '0%';
+                                    const totalObtained = record.subjects.reduce((acc, sub) => acc + (sub.internalMarks || 0) + (sub.assignmentMarks || 0), 0);
+                                    const totalMax = record.subjects.length * 200; 
+                                    const percentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) : 0;
+                                    return `${percentage}%`;
+                                })()}
+                            </h2>
                         </div>
                     </div>
                 </div>
