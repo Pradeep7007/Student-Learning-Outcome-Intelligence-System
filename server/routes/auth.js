@@ -9,7 +9,7 @@ const crypto = require('crypto');
 // Signup - directly save credentials (no bcrypt as requested)
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, role, password } = req.body;
+    const { name, email, role, password, year, department, rollno } = req.body;
     if (!name || !email || !role || !password) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
@@ -17,13 +17,20 @@ router.post('/signup', async (req, res) => {
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: 'User already exists.' });
 
-    const user = new User({ name, email, role, password });
+    // Add student-specific fields if role is student
+    const userData = { name, email, role, password };
+    if (role === 'student') {
+      userData.year = year;
+      userData.department = department;
+      userData.rollno = rollno;
+    }
+    const user = new User(userData);
     await user.save();
 
     // also save into role-specific collection
     try {
       if (role === 'student') {
-        const s = new StudentDetails({ name, email, password });
+        const s = new StudentDetails({ name, email, password, year, department, rollno });
         await s.save();
       } else if (role === 'staff') {
         const s = new StaffDetails({ name, email, password });

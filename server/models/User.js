@@ -6,6 +6,9 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     role: { type: String, required: true },
     password: { type: String, required: true },
+    year: { type: String }, // Only for students
+    department: { type: String }, // Only for students
+    rollno: { type: String }, // Only for students
     resetToken: { type: String },
     resetExpires: { type: Date }
   },

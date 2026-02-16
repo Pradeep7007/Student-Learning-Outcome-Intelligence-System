@@ -13,7 +13,7 @@ const AdminStaffs = () => {
 
   useEffect(() => {
     fetch(`${apiBase}/api/auth/staffs`).then(r=>r.json()).then(d=>setStaffs(d.staffs||[])).catch(()=>{});
-  }, []);
+  }, [apiBase]);
 
   const toggleEdit = (id) => {
     setEditing(prev => ({ ...prev, [id]: !prev[id] }));

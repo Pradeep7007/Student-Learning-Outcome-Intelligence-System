@@ -12,7 +12,10 @@ const Signup = () => {
     email: "",
     role: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    year: "",
+    department: "",
+    rollno: ""
   });
   const [message, setMessage] = useState("");
 
@@ -36,24 +39,26 @@ const Signup = () => {
     e.preventDefault();
     setMessage("");
 
-    const { name, email, role, password, confirmPassword } = formData;
+    const { name, email, role, password, confirmPassword, year, department, rollno } = formData;
 
     if (!name || !email || !role || !password || !confirmPassword) {
       setMessage("All fields are required.");
       return;
     }
-
+    if (role === 'student' && (!year || !department || !rollno)) {
+      setMessage("Year, department, and roll no are required for students.");
+      return;
+    }
     if (password !== confirmPassword) {
       setMessage("Passwords do not match.");
       return;
     }
-
     try {
       const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
       const res = await fetch(`${apiBase}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, role, password })
+        body: JSON.stringify({ name, email, role, password, year, department, rollno })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -61,7 +66,7 @@ const Signup = () => {
         return;
       }
       setMessage(data.message || 'Signup successful');
-      setFormData({ name: "", email: "", role: "", password: "", confirmPassword: "" });
+      setFormData({ name: "", email: "", role: "", password: "", confirmPassword: "", year: "", department: "", rollno: "" });
       navigate('/signin');
     } catch (err) {
       console.error(err);
@@ -132,6 +137,59 @@ const Signup = () => {
                   <option value="admin">Administrator</option>
                 </select>
               </div>
+
+              {/* Student-specific fields */}
+              {formData.role === 'student' && (
+                <>
+                  <div className="mb-3">
+                    <label className="form-label fw-bold">Year</label>
+                    <select
+                      name="year"
+                      className="form-select"
+                      value={formData.year}
+                      onChange={handleChange}
+                    >
+                      <option value="">Select year</option>
+                      <option value="I">I</option>
+                      <option value="II">II</option>
+                      <option value="III">III</option>
+                      <option value="IV">IV</option>
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-bold">Department</label>
+                    <select
+                      name="department"
+                      className="form-select"
+                      value={formData.department}
+                      onChange={handleChange}
+                    >
+                      <option value="">Select department</option>
+                      <option value="AI & DS">AI & DS</option>
+                      <option value="AI & ML">AI & ML</option>
+                      <option value="CSE">CSE</option>
+                      <option value="IT">IT</option>
+                      <option value="ECE">ECE</option>
+                      <option value="EEE">EEE</option>
+                      <option value="EIE">EIE</option>
+                      <option value="ME">ME</option>
+                      <option value="ISE">ISE</option>
+                      <option value="BT">BT</option>
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-bold">Roll No</label>
+                    <input
+                      type="text"
+                      name="rollno"
+                      className="form-control"
+                      placeholder="Enter roll number"
+                      value={formData.rollno}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </>
+              )}
 
               {/* Password */}
               <div className="mb-3">
