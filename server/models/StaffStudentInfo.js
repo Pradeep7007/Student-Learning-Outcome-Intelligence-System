@@ -1,24 +1,22 @@
 const mongoose = require('mongoose');
 
 const StaffStudentInfoSchema = new mongoose.Schema({
-  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  staffId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Optional, to track who entered it
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'StudentDetails', required: true },
+  staffId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' }, // optional
   rollNo: { type: String },
   department: { type: String },
-  
-  // Attendance and academic details
+
   totalDaysPresent: { type: Number, default: 0 },
   leaveDaysCount: { type: Number, default: 0 },
-  
-  // Array of subjects with specific details
+
   subjects: [
     {
-      name: { type: String, required: true }, // e.g., "Fundamentals of Computing"
-      code: { type: String }, // Optional subject code
-      attendanceHours: { type: Number, default: 0 }, // Max 120
-      internalMarks: { type: Number, default: 0 }, // Max 100 usually, or 20/40
+      name: { type: String, required: true },
+      code: { type: String },
+      attendanceHours: { type: Number, default: 0 },
+      internalMarks: { type: Number, default: 0 },
       assignmentMarks: { type: Number, default: 0 },
-      predictedGrade: { type: String } // stored from ML model
+      predictedGrade: { type: String }
     }
   ]
 }, { timestamps: true });

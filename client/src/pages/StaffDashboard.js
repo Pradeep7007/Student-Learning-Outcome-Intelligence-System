@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import SignOutButton from '../components/SignOutButton';
 import { getAuth } from '../utils/auth';
 
 const StaffDashboard = () => {
   const user = getAuth();
+  const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   const [totalStudents, setTotalStudents] = useState(0);
   const [deptCounts, setDeptCounts] = useState([]);
-  const [studentRecords, setStudentRecords] = useState([]);
-  const [filteredRecords, setFilteredRecords] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [students, setStudents] = useState([]);
+  const [records, setRecords] = useState([]);
   const [showForm, setShowForm] = useState(false);
 
-  // Constants
+  const [searchRoll, setSearchRoll] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc');
+
   const SUBJECTS_LIST = [
     { key: 'fundamentalsOfComputing', name: 'Fundamentals of Computing' },
     { key: 'dataStructuresI', name: 'Data Structures I' },
@@ -22,332 +24,247 @@ const StaffDashboard = () => {
     { key: 'probabilityAndStatistics', name: 'Probability & Statistics' }
   ];
 
-  // Initial state for one subject
-  const initialSubjectState = {
-      attendanceHours: '', // user input
-      internalMarks: '',
-      assignmentMarks: ''
-  };
+  const initialSubjectState = { attendanceHours: '', internalMarks: '', assignmentMarks: '' };
 
-  // State for form
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [rollNo, setRollNo] = useState('');
   const [department, setDepartment] = useState('');
-  
-  // Map of subjectKey -> object { attendance, internal, assignment }
   const [subjectData, setSubjectData] = useState(
-      SUBJECTS_LIST.reduce((acc, sub) => ({ ...acc, [sub.key]: { ...initialSubjectState } }), {})
+    SUBJECTS_LIST.reduce((acc, sub) => {
+      acc[sub.key] = { ...initialSubjectState };
+      return acc;
+    }, {})
   );
 
-  const fetchData = () => {
-    const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  // fetch all data
+  const fetchData = useCallback(async () => {
+    try {
+      // 1️⃣ Total students
+      const totalRes = await fetch(`${apiBase}/api/stats/students/count`);
+      const totalData = await totalRes.json();
+      setTotalStudents(totalData.count || 0);
 
-    fetch(`${apiBase}/api/stats/students/count`)
-      .then(r => r.json())
-      .then(d => setTotalStudents(d.count || 0));
+      // 2️⃣ Department counts
+      const deptRes = await fetch(`${apiBase}/api/stats/students/department-count`);
+      const deptData = await deptRes.json();
+      setDeptCounts(deptData.departments || []);
 
-    fetch(`${apiBase}/api/stats/students/department-count`)
-      .then(r => r.json())
-      .then(d => setDeptCounts(d.departments || []));
+      // 3️⃣ Students list
+      const studentsRes = await fetch(`${apiBase}/api/auth/students`);
+      const studentsData = await studentsRes.json();
+      setStudents(studentsData.students || []);
 
-    fetch(`${apiBase}/api/staff`)
-      .then(r => r.json())
-      .then(d => {
-        setStudentRecords(d || []);
-        setFilteredRecords(d || []);
-      });
+      // 4️⃣ Records (with populated studentId)
+      const recordsRes = await fetch(`${apiBase}/api/staff`);
+      const recordsData = await recordsRes.json();
+      setRecords(recordsData || []);
+    } catch (err) {
+      console.error(err);
+      setTotalStudents(0);
+      setDeptCounts([]);
+      setStudents([]);
+      setRecords([]);
+    }
+  }, [apiBase]);
 
-    fetch(`${apiBase}/api/auth/students`)
-      .then(r => r.json())
-      .then(d => setStudents(d.students || []));
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleStudentSelect = e => {
-      const sId = e.target.value;
-      setSelectedStudentId(sId);
-      const student = students.find(s => s._id === sId);
-      setRollNo(student?.rollno || '');
-      setDepartment(student?.department || '');
-  }
-
-  const handleSearch = (e) => {
-      const term = e.target.value.toLowerCase();
-      setSearchTerm(term);
-      
-      const filtered = studentRecords.filter(record => {
-          const name = record.studentId?.name?.toLowerCase() || '';
-          const roll = record.rollNo?.toLowerCase() || '';
-          const dept = record.department?.toLowerCase() || '';
-          
-          return name.includes(term) || roll.includes(term) || dept.includes(term);
-      });
-      setFilteredRecords(filtered);
+    const sId = e.target.value;
+    setSelectedStudentId(sId);
+    const student = students.find(s => s._id === sId);
+    setRollNo(student?.rollno || '');
+    setDepartment(student?.department || '');
   };
 
   const handleSubjectChange = (key, field, value) => {
-      setSubjectData(prev => ({
-          ...prev,
-          [key]: {
-              ...prev[key],
-              [field]: value
-          }
-      }));
+    setSubjectData(prev => ({ ...prev, [key]: { ...prev[key], [field]: value } }));
   };
 
-  const isFormValid = () => {
-      if (!selectedStudentId) return false;
-      // Check all subjects have values
-      for (const sub of SUBJECTS_LIST) {
-          const data = subjectData[sub.key];
-          if (!data.attendanceHours || !data.internalMarks || !data.assignmentMarks) {
-              return false;
-          }
-          // Optional: Add range checks (e.g. attendance <= 120) here
-      }
-      return true;
-  };
+  const isFormValid = () =>
+    selectedStudentId && SUBJECTS_LIST.every(sub => {
+      const d = subjectData[sub.key];
+      return d.attendanceHours && d.internalMarks && d.assignmentMarks;
+    });
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    if (!isFormValid()) {
-        alert('Please fill all fields for all 6 subjects.');
-        return;
-    }
+    if (!isFormValid()) return alert('Please fill all fields.');
 
-    const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
-    // Prepare payload
-    const subjectsPayload = SUBJECTS_LIST.map(sub => ({
+    const payload = {
+      studentId: selectedStudentId,
+      rollNo,
+      department,
+      subjects: SUBJECTS_LIST.map(sub => ({
         name: sub.name,
         code: sub.key,
         attendanceHours: parseInt(subjectData[sub.key].attendanceHours),
         internalMarks: parseInt(subjectData[sub.key].internalMarks),
         assignmentMarks: parseInt(subjectData[sub.key].assignmentMarks)
-    }));
-
-    const payload = {
-        studentId: selectedStudentId,
-        rollNo,
-        department,
-        subjects: subjectsPayload
+      }))
     };
 
-    fetch(`${apiBase}/api/staff`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(r => r.json())
-      .then((res) => {
-        if(res.message) alert(res.message);
-        setShowForm(false);
-        // Reset
-        setSelectedStudentId('');
-        setRollNo('');
-        setDepartment('');
-        setSubjectData(SUBJECTS_LIST.reduce((acc, sub) => ({ ...acc, [sub.key]: { ...initialSubjectState } }), {}));
-        fetchData();
-      })
-      .catch(err => alert('Error saving data'));
+    try {
+      await fetch(`${apiBase}/api/staff`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      // reset form
+      setShowForm(false);
+      setSelectedStudentId('');
+      setRollNo('');
+      setDepartment('');
+      setSubjectData(SUBJECTS_LIST.reduce((acc, sub) => { acc[sub.key] = { ...initialSubjectState }; return acc; }, {}));
+
+      fetchData(); // refresh records immediately
+    } catch {
+      alert('Error saving data');
+    }
   };
 
+  const filteredAndSortedRecords = records
+    .filter(r => r.studentId?.rollno?.toLowerCase().includes(searchRoll.toLowerCase()))
+    .sort((a, b) => {
+      const rollA = a.studentId?.rollno || '';
+      const rollB = b.studentId?.rollno || '';
+      return sortOrder === 'asc' ? rollA.localeCompare(rollB) : rollB.localeCompare(rollA);
+    });
+
   return (
-    <div className="container p-2 position-relative">
+    <div className="container p-3">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1>Staff Dashboard</h1>
         <SignOutButton />
       </div>
-      
-      <p className="lead">
-        Welcome, {user?.name || 'Staff'} <span className="badge bg-secondary">{user?.role || 'staff'}</span>
-      </p>
 
-      {/* Stats Section */}
+      <p className="lead">Welcome, {user?.name || 'Staff'} <span className="badge bg-secondary">{user?.role || 'staff'}</span></p>
+
+      {/* Stats */}
       <div className="row mb-4">
         <div className="col-12 col-md-3 mb-3">
           <div className="card text-center shadow h-100 border-primary">
             <div className="card-header bg-primary text-white">Total Students</div>
-            <div className="card-body d-flex align-items-center justify-content-center">
-              <h2 className="display-4 fw-bold">{totalStudents}</h2>
-            </div>
+            <div className="card-body"><h2 className="fw-bold">{totalStudents}</h2></div>
           </div>
         </div>
-
         {deptCounts.map(d => (
           <div className="col-12 col-md-3 mb-3" key={d._id}>
             <div className="card text-center shadow h-100 border-info">
               <div className="card-header bg-info text-white">Dept: {d._id || 'Unknown'}</div>
-              <div className="card-body d-flex align-items-center justify-content-center">
-                 <h2 className="display-4 fw-bold">{d.count}</h2>
-              </div>
+              <div className="card-body"><h2 className="fw-bold">{d.count}</h2></div>
             </div>
           </div>
         ))}
       </div>
 
-      <hr />
-
-      {/* Insert Box */}
+      {/* Insert Academic Record */}
       <div className="mb-4 text-center">
-        <button 
-            className="btn btn-success btn-lg shadow"
-            onClick={() => setShowForm(!showForm)}
-        >
-            <span className="me-2 fs-4">➕</span> Insert Student Academic Record
-        </button>
+        <button className="btn btn-success btn-lg" onClick={() => setShowForm(!showForm)}>Insert Student Academic Record</button>
       </div>
 
-      {/* Form */}
       {showForm && (
-        <div className="card shadow p-4 mb-5 border-0 bg-light">
-          <h4 className="mb-3">Enter Academic Details (All Subjects Mandatory)</h4>
-          
-          <div className="alert alert-info py-2">
-              <strong>Note:</strong> Total Days (120) and Total Hours (720) are fixed and calculated automatically.
-          </div>
-
+        <div className="card p-4 mb-5 bg-light">
           <form onSubmit={handleSubmit}>
-            <div className="row">
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">Select Student</label>
-                  <select
-                    className="form-select"
-                    value={selectedStudentId}
-                    onChange={handleStudentSelect}
-                    required
-                  >
-                    <option value="">-- Select Student --</option>
-                    {students.map(s => (
-                      <option key={s._id} value={s._id}>
-                        {s.name} ({s.rollno})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <label className="form-label">Roll No</label>
-                  <input type="text" className="form-control" value={rollNo} readOnly />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <label className="form-label">Department</label>
-                  <input type="text" className="form-control" value={department} readOnly />
-                </div>
-            </div>
-            
-            <div className="table-responsive">
-                <table className="table table-bordered table-striped bg-white">
-                    <thead className="table-light">
-                        <tr>
-                            <th>Subject</th>
-                            <th>Attendance (Max 120 hrs)</th>
-                            <th>Internal Marks (Max 100)</th>
-                            <th>Assignment Marks (Max 100)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {SUBJECTS_LIST.map(sub => (
-                            <tr key={sub.key}>
-                                <td>{sub.name}</td>
-                                <td>
-                                    <input 
-                                        type="number" 
-                                        className="form-control"
-                                        min="0" max="120"
-                                        value={subjectData[sub.key].attendanceHours}
-                                        onChange={(e) => handleSubjectChange(sub.key, 'attendanceHours', e.target.value)}
-                                        required
-                                    />
-                                </td>
-                                <td>
-                                    <input 
-                                        type="number" 
-                                        className="form-control"
-                                        min="0" max="100"
-                                        value={subjectData[sub.key].internalMarks}
-                                        onChange={(e) => handleSubjectChange(sub.key, 'internalMarks', e.target.value)}
-                                        required
-                                    />
-                                </td>
-                                <td>
-                                    <input 
-                                        type="number" 
-                                        className="form-control"
-                                        min="0" max="100"
-                                        value={subjectData[sub.key].assignmentMarks}
-                                        onChange={(e) => handleSubjectChange(sub.key, 'assignmentMarks', e.target.value)}
-                                        required
-                                    />
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            <div className="row mb-3">
+              <div className="col-md-6">
+                <label>Select Student</label>
+                <select className="form-select" value={selectedStudentId} onChange={handleStudentSelect} required>
+                  <option value="">-- Select Student --</option>
+                  {students.map(s => <option key={s._id} value={s._id}>{s.name} ({s.rollno})</option>)}
+                </select>
+              </div>
+              <div className="col-md-3">
+                <label>Roll No</label>
+                <input className="form-control" value={rollNo} readOnly />
+              </div>
+              <div className="col-md-3">
+                <label>Department</label>
+                <input className="form-control" value={department} readOnly />
+              </div>
             </div>
 
-            <div className="d-grid gap-2 mt-3">
-                <button type="submit" className="btn btn-primary btn-lg" disabled={!isFormValid()}>
-                    Save & Predict Grades
-                </button>
-            </div>
+            <table className="table table-bordered">
+              <thead className="table-dark">
+                <tr>
+                  <th>Subject</th>
+                  <th>Attendance (Max 120)</th>
+                  <th>Internal Marks (Max 100)</th>
+                  <th>Assignment Marks (Max 100)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {SUBJECTS_LIST.map(sub => (
+                  <tr key={sub.key}>
+                    <td>{sub.name}</td>
+                    <td><input type="number" min="0" max="120" className="form-control"
+                      value={subjectData[sub.key].attendanceHours}
+                      onChange={e => handleSubjectChange(sub.key, 'attendanceHours', e.target.value)}
+                      required
+                    /></td>
+                    <td><input type="number" min="0" max="100" className="form-control"
+                      value={subjectData[sub.key].internalMarks}
+                      onChange={e => handleSubjectChange(sub.key, 'internalMarks', e.target.value)}
+                      required
+                    /></td>
+                    <td><input type="number" min="0" max="100" className="form-control"
+                      value={subjectData[sub.key].assignmentMarks}
+                      onChange={e => handleSubjectChange(sub.key, 'assignmentMarks', e.target.value)}
+                      required
+                    /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <button type="submit" className="btn btn-primary mt-3" disabled={!isFormValid()}>Save & Predict Grades</button>
           </form>
         </div>
       )}
 
-      {/* Records Section */}
-      <div className="d-flex justify-content-between align-items-center mb-3 mt-4 border-bottom pb-2">
-        <h2 className="mb-0">Students Records</h2>
-        <div className="w-50">
-            <input 
-                type="text" 
-                className="form-control" 
-                placeholder="Search by Name, Roll No, or Department..." 
-                value={searchTerm}
-                onChange={handleSearch}
-            />
+      {/* Student Records */}
+      <hr />
+      <h3>Student Records</h3>
+      <div className="row mb-3">
+        <div className="col-md-4">
+          <input type="text" className="form-control" placeholder="Search by Roll No..." value={searchRoll} onChange={e => setSearchRoll(e.target.value)} />
+        </div>
+        <div className="col-md-3">
+          <select className="form-select" value={sortOrder} onChange={e => setSortOrder(e.target.value)}>
+            <option value="asc">Sort Roll No (A → Z)</option>
+            <option value="desc">Sort Roll No (Z → A)</option>
+          </select>
         </div>
       </div>
 
-      {filteredRecords.length === 0 ? (
-          <p className="text-muted">No records found matching your search.</p>
-      ) : (
-          <div className="table-responsive">
-            <table className="table table-striped table-hover shadow-sm">
-                <thead className="table-dark">
-                    <tr>
-                        <th scope="col">Student Name</th>
-                        <th scope="col">Roll No</th>
-                        <th scope="col">Department</th>
-                        <th scope="col">Overall Outcome (%)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredRecords.map(record => {
-                        // Calculate Overall Percentage
-                        const totalObtained = record.subjects?.reduce((acc, sub) => acc + (sub.internalMarks || 0) + (sub.assignmentMarks || 0), 0) || 0;
-                        const totalMax = (record.subjects?.length || 0) * 200;
-                        const percentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) : '0.0';
-                        
-                        return (
-                            <tr key={record._id}>
-                                <td>{record.student?.name || 'N/A'}</td>
-                                <td>{record.rollNo || 'N/A'}</td>
-                                <td>{record.department || 'N/A'}</td>
-                                <td>
-                                    <span className={`badge ${parseFloat(percentage) >= 75 ? 'bg-success' : parseFloat(percentage) >= 50 ? 'bg-warning' : 'bg-danger'}`}>
-                                        {percentage}%
-                                    </span>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-          </div>
-      )}
+      <table className="table table-bordered">
+        <thead className="table-dark">
+          <tr>
+            <th>Name</th>
+            <th>Roll No</th>
+            <th>Department</th>
+            <th>Overall Outcome (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredAndSortedRecords.length === 0
+            ? <tr><td colSpan="4" className="text-center">No records found</td></tr>
+            : filteredAndSortedRecords.map(r => {
+              const totalObtained = r.subjects?.reduce((acc, s) => acc + (s.internalMarks || 0) + (s.assignmentMarks || 0), 0) || 0;
+              const totalMax = (r.subjects?.length || 0) * 200;
+              const percentage = totalMax ? ((totalObtained / totalMax) * 100).toFixed(1) : '0.0';
+              return (
+                <tr key={r._id}>
+                  <td>{r.studentId?.name || 'N/A'}</td>
+                  <td>{r.studentId?.rollno || 'N/A'}</td>
+                  <td>{r.studentId?.department || 'N/A'}</td>
+                  <td>{percentage}%</td>
+                </tr>
+              );
+            })}
+        </tbody>
+      </table>
     </div>
   );
 };
