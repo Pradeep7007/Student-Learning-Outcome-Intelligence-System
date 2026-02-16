@@ -279,7 +279,7 @@ const StaffDashboard = () => {
       )}
 
       {/* Records Section */}
-      <h2 className="mt-4 mb-3 border-bottom pb-2">Recent Records</h2>
+      <h2 className="mt-4 mb-3 border-bottom pb-2">Students Records</h2>
       {studentRecords.length === 0 ? (
           <p className="text-muted">No records found.</p>
       ) : (
