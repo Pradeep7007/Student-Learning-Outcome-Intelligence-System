@@ -47,4 +47,4 @@ def train_student_model(csv_path=None):
     print(f"Model saved at: {model_save_path}")
 
 if __name__ == "__main__":
-    train_student_model()
+    train_student_model( )
