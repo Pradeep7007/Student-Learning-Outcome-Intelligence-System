@@ -6,6 +6,11 @@ const academicRecordSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  email: {
+    type: String,
+    lowercase: true,
+    trim: true
+  },
   staffName: String,
   semester: {
     type: String,

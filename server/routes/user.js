@@ -7,6 +7,26 @@ const Staff = require('../models/Staff');
 const Admin = require('../models/Admin');
 
 const AcademicRecord = require('../models/AcademicRecord');
+const MLPredict = require('../models/MLPredict');
+
+// Standalone prediction logic (Weighted Average)
+const calculatePrediction = (academic) => {
+  if (!academic || !academic.subjects || academic.subjects.length === 0) return 0;
+  
+  // Calculate average of current marks (out of 100 per subject)
+  const totalMarks = academic.subjects.reduce((sum, sub) => {
+    return sum + (sub.internalMark + sub.assignmentMark + sub.practicalMark);
+  }, 0);
+  
+  const currentAvg = totalMarks / academic.subjects.length;
+  const currentGPA = (currentAvg / 100) * 10;
+  
+  // Weighted prediction: 60% current performance, 40% previous CGPA
+  const predicted = (currentGPA * 0.6) + (academic.previousSemCGPA * 0.4);
+  
+  // Return rounded to 2 decimal places, max 10.0
+  return Math.min(10.0, Math.round(predicted * 100) / 100);
+};
 
 // @route   GET api/user/profile
 // @desc    Get current user profile details
@@ -61,11 +81,26 @@ router.get('/my-academic-record', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/user/my-prediction
+// @desc    Get student's ML outcome prediction
+router.get('/my-prediction', auth, async (req, res) => {
+  try {
+    const student = await Student.findOne({ userId: req.user.id });
+    if (!student) return res.status(404).json({ message: 'Student profile not found' });
+
+    const prediction = await MLPredict.findOne({ rollno: student.rollno, semester: student.semester });
+    res.json(prediction);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route   POST api/user/academic-record
-// @desc    Save or update student academic record
+// @desc    Save or update student academic record and trigger ML prediction
 router.post('/academic-record', auth, async (req, res) => {
   try {
-    const { studentName, rollno, semester, department, subjects, previousSemCGPA, attendancePercentage } = req.body;
+    const { studentName, rollno, email, semester, department, subjects, previousSemCGPA, attendancePercentage } = req.body;
 
     let record = await AcademicRecord.findOne({ rollno, semester });
 
@@ -73,6 +108,7 @@ router.post('/academic-record', auth, async (req, res) => {
       record.subjects = subjects;
       record.staffName = req.user.name;
       record.studentName = studentName;
+      record.email = email;
       record.previousSemCGPA = previousSemCGPA;
       record.attendancePercentage = attendancePercentage;
       await record.save();
@@ -80,6 +116,7 @@ router.post('/academic-record', auth, async (req, res) => {
       record = new AcademicRecord({
         studentName,
         rollno,
+        email,
         staffName: req.user.name,
         semester,
         department,
@@ -90,7 +127,28 @@ router.post('/academic-record', auth, async (req, res) => {
       await record.save();
     }
 
-    res.json({ message: 'Academic record saved successfully', record });
+    // TRIGGER ML PREDICTION
+    const predictedVal = calculatePrediction(record);
+    
+    // Save to MLPredict schema
+    let prediction = await MLPredict.findOne({ rollno, semester });
+    if (prediction) {
+      prediction.predictedCGPA = predictedVal;
+      prediction.studentName = studentName;
+      prediction.email = email;
+      await prediction.save();
+    } else {
+      prediction = new MLPredict({
+        studentName,
+        email,
+        rollno,
+        semester,
+        predictedCGPA: predictedVal
+      });
+      await prediction.save();
+    }
+
+    res.json({ message: 'Academic record saved and ML prediction updated!', record, prediction });
   } catch (err) {
     console.error(err);
     res.status(500).send('Server Error');

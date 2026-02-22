@@ -135,6 +135,7 @@ const StaffDashboard = () => {
         body: JSON.stringify({
           studentName: selectedStudent.name,
           rollno: selectedStudent.rollno,
+          email: selectedStudent.email,
           semester,
           department: dept,
           subjects: formattedSubjects,
