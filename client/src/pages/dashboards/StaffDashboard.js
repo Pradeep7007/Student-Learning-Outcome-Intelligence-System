@@ -190,7 +190,11 @@ const StaffDashboard = () => {
               <h5 className="fw-bold mb-4">Student Academic Entry Form</h5>
               <div className="mb-4">
                 <label className="form-label fw-bold">Select Student</label>
-                <select className="form-select w-auto" onChange={handleStudentSelect}>
+                <select 
+                  className="form-select w-auto" 
+                  onChange={handleStudentSelect}
+                  value={selectedStudent?._id || ''}
+                >
                   <option value="">Choose a student from your department...</option>
                   {students.map(s => (
                     <option key={s._id} value={s._id}>{s.name} ({s.rollno})</option>
