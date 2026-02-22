@@ -21,12 +21,12 @@ const Signin = () => {
 
   const togglePassword = () => setShowPassword(prev => !prev);
 
-  // redirect if already logged in
+  // No redirect if already logged in since dashboard is removed
   React.useEffect(() => {
-    try {
-      const stored = localStorage.getItem('slois_user');
-      if (stored) navigate('/dashboard');
-    } catch (e) {}
+    // try {
+    //   const stored = localStorage.getItem('slois_user');
+    //   if (stored) navigate('/dashboard');
+    // } catch (e) {}
   }, [navigate]);
 
   return (
@@ -140,14 +140,12 @@ const Signin = () => {
                           setMessage(`You are registered as a ${data.user.role}. Please select the correct role to sign in.`);
                           return;
                         }
-                        // store user and navigate according to role
-                        if (data.user) setAuth(data.user);
+                        // store user and token
+                        if (data.token) setAuth(data);
                         setMessage(data.message || 'Login successful');
-                        if (data.user && data.user.role === 'admin') {
-                          navigate('/admin');
-                        } else {
-                          navigate('/dashboard');
-                        }
+                        
+                        // Navigate to dashboard
+                        navigate('/dashboard');
                       } catch (err) {
                         console.error(err);
                         setMessage('Network error');

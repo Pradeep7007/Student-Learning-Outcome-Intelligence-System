@@ -13,9 +13,10 @@ const Signup = () => {
     role: "",
     password: "",
     confirmPassword: "",
-    year: "",
+    semester: "",
     department: "",
-    rollno: ""
+    rollno: "",
+    dob: ""
   });
   const [message, setMessage] = useState("");
 
@@ -25,7 +26,7 @@ const Signup = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
-    if (isAuthenticated()) navigate('/dashboard');
+    // if (isAuthenticated()) navigate('/dashboard');
   }, [navigate]);
 
   const handleChange = (e) => {
@@ -39,14 +40,18 @@ const Signup = () => {
     e.preventDefault();
     setMessage("");
 
-    const { name, email, role, password, confirmPassword, year, department, rollno } = formData;
+    const { name, email, role, password, confirmPassword, semester, department, rollno, dob } = formData;
 
     if (!name || !email || !role || !password || !confirmPassword) {
       setMessage("All fields are required.");
       return;
     }
-    if (role === 'student' && (!year || !department || !rollno)) {
-      setMessage("Year, department, and roll no are required for students.");
+    if (role === 'student' && (!semester || !department || !rollno || !dob)) {
+      setMessage("Semester, department, roll no, and date of birth are required for students.");
+      return;
+    }
+    if (role === 'staff' && !department) {
+      setMessage("Department is required for staff.");
       return;
     }
     if (password !== confirmPassword) {
@@ -58,7 +63,7 @@ const Signup = () => {
       const res = await fetch(`${apiBase}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, role, password, year, department, rollno })
+        body: JSON.stringify({ name, email, role, password, semester, department, rollno, dob })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -66,7 +71,7 @@ const Signup = () => {
         return;
       }
       setMessage(data.message || 'Signup successful');
-      setFormData({ name: "", email: "", role: "", password: "", confirmPassword: "", year: "", department: "", rollno: "" });
+      setFormData({ name: "", email: "", role: "", password: "", confirmPassword: "", semester: "", department: "", rollno: "", dob: "" });
       navigate('/signin');
     } catch (err) {
       console.error(err);
@@ -138,24 +143,31 @@ const Signup = () => {
                 </select>
               </div>
 
-              {/* Student-specific fields */}
-              {formData.role === 'student' && (
+              {/* Role-specific fields */}
+              {(formData.role === 'student' || formData.role === 'staff') && (
                 <>
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">Year</label>
-                    <select
-                      name="year"
-                      className="form-select"
-                      value={formData.year}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select year</option>
-                      <option value="I">I</option>
-                      <option value="II">II</option>
-                      <option value="III">III</option>
-                      <option value="IV">IV</option>
-                    </select>
-                  </div>
+                  {formData.role === 'student' && (
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Semester</label>
+                      <select
+                        name="semester"
+                        className="form-select"
+                        value={formData.semester}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select semester</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                      </select>
+                    </div>
+                  )}
+
                   <div className="mb-3">
                     <label className="form-label fw-bold">Department</label>
                     <select
@@ -177,17 +189,32 @@ const Signup = () => {
                       <option value="BT">BT</option>
                     </select>
                   </div>
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">Roll No</label>
-                    <input
-                      type="text"
-                      name="rollno"
-                      className="form-control"
-                      placeholder="Enter roll number"
-                      value={formData.rollno}
-                      onChange={handleChange}
-                    />
-                  </div>
+
+                  {formData.role === 'student' && (
+                    <>
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Roll No</label>
+                        <input
+                          type="text"
+                          name="rollno"
+                          className="form-control"
+                          placeholder="Enter roll number"
+                          value={formData.rollno}
+                          onChange={handleChange}
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Date of Birth</label>
+                        <input
+                          type="date"
+                          name="dob"
+                          className="form-control"
+                          value={formData.dob}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 

@@ -1,25 +1,44 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-const UserSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    role: { type: String, required: true },
-    password: { type: String, required: true },
-    year: { type: String }, // Only for students
-    department: { type: String }, // Only for students
-    rollno: { type: String }, // Only for students
-    resetToken: { type: String },
-    resetExpires: { type: Date }
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
   },
-  { timestamps: true }
-);
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  role: {
+    type: String,
+    enum: ['student', 'staff', 'admin'],
+    required: true
+  },
+  resetToken: String,
+  resetTokenExpiry: Date
+}, { timestamps: true });
 
-// Pre-save hook to enforce uppercase
-UserSchema.pre('save', function(next) {
-  if (this.name) this.name = this.name.toUpperCase();
-  if (this.email) this.email = this.email.toUpperCase();
-  next();
+// Pre-save hook to uppercase name and hash password
+userSchema.pre('save', async function() {
+  // Uppercase name
+  if (this.isModified('name')) {
+    this.name = this.name.toUpperCase();
+  }
+
+  // Hash password
+  if (this.isModified('password')) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
 });
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('User', userSchema);

@@ -1,10 +1,16 @@
 // Simple auth utility using localStorage
-export function setAuth(user) {
-  if (!user) return;
-  localStorage.setItem('slois_user', JSON.stringify(user));
+export function setAuth(data) {
+  if (!data || !data.token) return;
+  localStorage.setItem('slois_token', data.token);
+  localStorage.setItem('slois_user', JSON.stringify(data.user));
+}
+
+export function getToken() {
+  return localStorage.getItem('slois_token');
 }
 
 export function clearAuth() {
+  localStorage.removeItem('slois_token');
   localStorage.removeItem('slois_user');
 }
 
@@ -15,5 +21,5 @@ export function getAuth() {
 }
 
 export function isAuthenticated() {
-  return !!getAuth();
+  return !!getToken();
 }

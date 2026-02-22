@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const staffSchema = new mongoose.Schema({
+const adminSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -13,14 +13,13 @@ const staffSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
-  department: String, // Staff might also have a department
-  staffId: String
+  permissions: [String]
 }, { timestamps: true });
 
-staffSchema.pre('save', async function() {
+adminSchema.pre('save', async function() {
   if (this.name) {
     this.name = this.name.toUpperCase();
   }
 });
 
-module.exports = mongoose.model('Staff', staffSchema);
+module.exports = mongoose.model('Admin', adminSchema);
