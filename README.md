@@ -15,13 +15,7 @@ This project consists of a React frontend and a Node.js/Express backend.
    ```bash
    npm install
    ```
-3. Create/Check `.env` file in the `server` directory:
-   ```env
-   PORT=5000
-   MONGO_URI=mongodb://localhost:27017/student-slo
-   JWT_SECRET=your_secret_key
-   ```
-4. Start the backend:
+3. Start the backend:
    ```bash
    npm run dev
    ```
