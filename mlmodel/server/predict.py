@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # MongoDB Connection
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/student_db")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/student-slo")
 client = MongoClient(MONGO_URI)
 db = client.get_database()
 ml_collection = db['mlpredicts']
