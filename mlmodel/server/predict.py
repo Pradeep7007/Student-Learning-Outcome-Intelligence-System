@@ -42,17 +42,18 @@ def predict_all_students():
             ass_avg = sum(s.get('assignmentMark', 0) for s in subjects) / len(subjects)
             prac_avg = sum(s.get('practicalMark', 0) for s in subjects) / len(subjects)
             
-            # Prepare input features
-            features = np.array([[
+            # Prepare input features as a DataFrame to avoid feature name warnings
+            feature_names = ['internal_avg', 'assignment_avg', 'practical_avg', 'attendance', 'prev_cgpa']
+            features_df = pd.DataFrame([[
                 int_avg, 
                 ass_avg, 
                 prac_avg, 
                 rec.get('attendancePercentage', 0),
                 rec.get('previousSemCGPA', 0)
-            ]])
+            ]], columns=feature_names)
             
             # 3. Predict
-            prediction = model.predict(features)[0]
+            prediction = model.predict(features_df)[0]
             predicted_cgpa = round(float(prediction), 2)
             
             # 4. Store in mlpredicts schema
@@ -79,16 +80,17 @@ def get_prediction(data):
     # (Remains same for individual manual checks in Streamlit)
     try:
         model = joblib.load(MODEL_PATH)
-        input_data = np.array([[
+        feature_names = ['internal_avg', 'assignment_avg', 'practical_avg', 'attendance', 'prev_cgpa']
+        input_data = pd.DataFrame([[
             data['internal_avg'],
             data['assignment_avg'],
             data['practical_avg'],
             data['attendance'],
             data['prev_cgpa']
-        ]])
+        ]], columns=feature_names)
         prediction = model.predict(input_data)[0]
         return round(float(prediction), 2)
-    except: return None
+    except Exception: return None
 
 if __name__ == "__main__":
     print(predict_all_students())
