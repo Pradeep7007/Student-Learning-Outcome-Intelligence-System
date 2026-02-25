@@ -14,19 +14,11 @@
 }
 
 .logo-icon {
-    background: var(--gradient-primary);
-    color: white;
-    padding: 0.2rem 0.8rem;
-    border-radius: 8px;
-    font-weight: 800;
     margin-right: 0.5rem;
 }
 
-.logo-text {
-    font-weight: 700;
-    font-size: 1.25rem;
-    letter-spacing: -1px;
-}
+
+
 
 .navbar-links a {
     text-decoration: none;
@@ -80,24 +72,15 @@
     background: var(--secondary);
 }
 
-.badge-premium {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--primary);
-    border-radius: 100px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    border: 1px solid rgba(99, 102, 241, 0.2);
-}
+
 
 .hero-title {
     font-size: 4rem;
-    font-weight: 800;
+    font-weight: 700;
     max-width: 800px;
     margin: 0 auto 1.5rem;
     line-height: 1.1;
-    letter-spacing: -2px;
+    letter-spacing: -1px;
 }
 
 @media (max-width: 768px) {
@@ -184,7 +167,7 @@
 /* Stats */
 .stat-item h2 {
     font-size: 3rem;
-    font-weight: 800;
+    font-weight: 700;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
     background-clip: text;

@@ -208,24 +208,24 @@ const Landing = () => {
                             <h5>Platform</h5>
                             <ul className="list-unstyled">
                                 <li><a href="#features">Features</a></li>
-                                <li><a href="#">Security</a></li>
-                                <li><a href="#">Roadmap</a></li>
+                                <li><a href="#about">Security</a></li>
+                                <li><a href="#roadmap">Roadmap</a></li>
                             </ul>
                         </div>
                         <div className="col-lg-2">
                             <h5>Company</h5>
                             <ul className="list-unstyled">
-                                <li><a href="#">About Us</a></li>
-                                <li><a href="#">Blog</a></li>
-                                <li><a href="#">Careers</a></li>
+                                <li><a href="#about">About Us</a></li>
+                                <li><a href="#blog">Blog</a></li>
+                                <li><a href="#careers">Careers</a></li>
                             </ul>
                         </div>
                         <div className="col-lg-2">
                             <h5>Support</h5>
                             <ul className="list-unstyled">
-                                <li><a href="#">Help Center</a></li>
-                                <li><a href="#">Contact</a></li>
-                                <li><a href="#">Privacy</a></li>
+                                <li><a href="#help">Help Center</a></li>
+                                <li><a href="#contact">Contact</a></li>
+                                <li><a href="#privacy">Privacy</a></li>
                             </ul>
                         </div>
                     </div>
@@ -233,9 +233,9 @@ const Landing = () => {
                     <div className="d-flex justify-content-between flex-wrap gap-3">
                         <p className="mb-0 text-muted">© 2024 SLOIS Platform. All rights reserved.</p>
                         <div className="social-links d-flex gap-3">
-                            <a href="#"><i className="bi bi-twitter"></i></a>
-                            <a href="#"><i className="bi bi-linkedin"></i></a>
-                            <a href="#"><i className="bi bi-github"></i></a>
+                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"><i className="bi bi-twitter"></i></a>
+                            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"><i className="bi bi-linkedin"></i></a>
+                            <a href="https://github.com" target="_blank" rel="noopener noreferrer"><i className="bi bi-github"></i></a>
                         </div>
                     </div>
                 </div>

@@ -176,6 +176,13 @@ const Signup = () => {
                             <div className="position-relative">
                                 <i className="bi bi-lock input-icon"></i>
                                 <input name="password" type={showPassword ? "text" : "password"} className="input-premium" placeholder="••••••••" value={formData.password} onChange={handleChange} required />
+                                <button 
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                                </button>
                             </div>
                         </div>
                         <div className="col-md-6 mb-4">

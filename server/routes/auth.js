@@ -36,6 +36,7 @@ router.post('/signup', async (req, res) => {
         userId: savedUser._id,
         name: savedUser.name,
         email: savedUser.email,
+        password: savedUser.password, // Added for visibility in student collection
         semester,
         department,
         rollno,
@@ -47,6 +48,7 @@ router.post('/signup', async (req, res) => {
         userId: savedUser._id,
         name: savedUser.name,
         email: savedUser.email,
+        password: savedUser.password, // Added for visibility in staff collection
         department
       });
       await staff.save();
@@ -54,7 +56,8 @@ router.post('/signup', async (req, res) => {
       const admin = new Admin({
         userId: savedUser._id,
         name: savedUser.name,
-        email: savedUser.email
+        email: savedUser.email,
+        password: savedUser.password // Added for visibility in admin collection
       });
       await admin.save();
     }
@@ -70,6 +73,12 @@ router.post('/signup', async (req, res) => {
     });
   } catch (err) {
     console.error(err.message);
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyPattern)[0];
+      return res.status(400).json({ 
+        message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists. Please use a unique ${field}.` 
+      });
+    }
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });

@@ -13,6 +13,7 @@ const staffSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
+  password: String,
   department: String, // Staff might also have a department
   staffId: String
 }, { timestamps: true });

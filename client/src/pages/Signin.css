@@ -60,14 +60,7 @@
     margin-bottom: 1.5rem;
 }
 
-.logo-icon {
-    background: var(--gradient-primary);
-    color: white;
-    padding: 0.4rem 1rem;
-    border-radius: 10px;
-    font-weight: 800;
-    font-size: 1.5rem;
-}
+
 
 .form-label {
     font-weight: 600;

@@ -13,6 +13,7 @@ const studentSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
+  password: String,
   semester: String,
   department: String,
   rollno: {

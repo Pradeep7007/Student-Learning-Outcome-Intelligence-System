@@ -13,6 +13,7 @@ const adminSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
+  password: String,
   permissions: [String]
 }, { timestamps: true });
 
