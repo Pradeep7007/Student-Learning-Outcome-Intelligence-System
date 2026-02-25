@@ -11,11 +11,16 @@ const Navbar = ({ title }) => {
   };
 
   return (
-    <nav className="navbar navbar-dark bg-primary shadow-sm px-4 sticky-top">
-      <span className="navbar-brand mb-0 h1 fw-bold">{title || 'SLOIS Dashboard'}</span>
-      <button className="btn btn-outline-light btn-sm fw-bold border-2" onClick={handleLogout}>
-        <i className="bi bi-box-arrow-right me-1"></i> Logout
-      </button>
+    <nav className="navbar navbar-premium glass-card px-4 sticky-top border-0">
+      <div className="container-fluid d-flex justify-content-between align-items-center">
+        <span className="navbar-logo">
+          <span className="logo-icon">S</span>
+          <span className="logo-text ms-2">{title || 'Dashboard'}</span>
+        </span>
+        <button className="btn-premium-outline btn-sm py-1 px-3" onClick={handleLogout}>
+          <i className="bi bi-box-arrow-right me-1"></i> Logout
+        </button>
+      </div>
     </nav>
   );
 };

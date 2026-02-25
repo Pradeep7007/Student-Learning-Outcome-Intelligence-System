@@ -1,277 +1,213 @@
-import React, { useState, useEffect } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
-import "./Signup.css";
-import { isAuthenticated } from '../utils/auth';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import './Signup.css';
 
 const Signup = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    role: "",
-    password: "",
-    confirmPassword: "",
-    semester: "",
-    department: "",
-    rollno: "",
-    dob: ""
-  });
-  const [message, setMessage] = useState("");
-
-  const togglePassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const navigate = useNavigate();
-  useEffect(() => {
-    // if (isAuthenticated()) navigate('/dashboard');
-  }, [navigate]);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
+    const [showPassword, setShowPassword] = useState(false);
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        role: "student",
+        password: "",
+        confirmPassword: "",
+        semester: "",
+        department: "",
+        rollno: "",
+        dob: ""
     });
-  };
+    const [message, setMessage] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage("");
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-    const { name, email, role, password, confirmPassword, semester, department, rollno, dob } = formData;
+    const handleRoleChange = (role) => {
+        setFormData({ ...formData, role });
+    };
 
-    if (!name || !email || !role || !password || !confirmPassword) {
-      setMessage("All fields are required.");
-      return;
-    }
-    if (role === 'student' && (!semester || !department || !rollno || !dob)) {
-      setMessage("Semester, department, roll no, and date of birth are required for students.");
-      return;
-    }
-    if (role === 'staff' && !department) {
-      setMessage("Department is required for staff.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setMessage("Passwords do not match.");
-      return;
-    }
-    try {
-      const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-      const res = await fetch(`${apiBase}/api/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, role, password, semester, department, rollno, dob })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setMessage(data.message || 'Signup failed');
-        return;
-      }
-      setMessage(data.message || 'Signup successful');
-      setFormData({ name: "", email: "", role: "", password: "", confirmPassword: "", semester: "", department: "", rollno: "", dob: "" });
-      navigate('/signin');
-    } catch (err) {
-      console.error(err);
-      setMessage('Network error');
-    }
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMessage("");
+        const { name, email, role, password, confirmPassword, semester, department, rollno, dob } = formData;
 
-  return (
-    <div
-      className="min-vh-100 d-flex align-items-center justify-content-center"
-      style={{
-        background: "linear-gradient(135deg, #f6f7f8 0%, #e9ecef 100%)",
-      }}
-    >
-      <div className="col-11 col-sm-8 col-md-6 col-lg-4">
-        <div className="text-center mb-4 mb-md-5">
-          <div
-            className="d-inline-flex align-items-center justify-content-center rounded bg-primary text-white mb-3"
-            style={{ width: '60px', height: '60px' }}
-          >
-            <i className="bi bi-person-circle fs-4"></i>
-          </div>
-          <h2 className="fw-bold">SLOIS</h2>
-        </div>
-        <div className="card shadow-lg border-0">
-          <div className="card-body p-4">
-            <h4 className="text-center mb-4">Create an Account</h4>
+        if (password !== confirmPassword) {
+            setMessage("Passwords do not match.");
+            return;
+        }
 
-            <form onSubmit={handleSubmit}>
-              {/* Name */}
-              <div className="mb-3">
-                <label className="form-label fw-bold">Full Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  className="form-control"
-                  placeholder="John Doe"
-                  value={formData.name}
-                  onChange={handleChange}
-                />
-              </div>
+        setIsLoading(true);
+        try {
+            const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+            const res = await fetch(`${apiBase}/api/auth/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, role, password, semester, department, rollno, dob })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setMessage(data.message || 'Signup failed');
+                return;
+            }
+            setMessage('Account created successfully!');
+            setTimeout(() => navigate('/signin'), 1500);
+        } catch (err) {
+            console.error(err);
+            setMessage('Network error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-              {/* Email */}
-              <div className="mb-3">
-                <label className="form-label fw-bold">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  className="form-control"
-                  placeholder="student@university.edu"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
+    return (
+        <div className="signup-page">
+            <div className="signup-bg-blobs">
+                <div className="signup-blob blob-1"></div>
+                <div className="signup-blob blob-2"></div>
+            </div>
 
-              {/* Role */}
-              <div className="mb-3">
-                <label className="form-label fw-bold">Role</label>
-                <select
-                  name="role"
-                  className="form-select"
-                  value={formData.role}
-                  onChange={handleChange}
-                >
-                  <option value="">Select your role</option>
-                  <option value="student">Student</option>
-                  <option value="staff">Academic Staff</option>
-                  <option value="admin">Administrator</option>
-                </select>
-              </div>
-
-              {/* Role-specific fields */}
-              {(formData.role === 'student' || formData.role === 'staff') && (
-                <>
-                  {formData.role === 'student' && (
-                    <div className="mb-3">
-                      <label className="form-label fw-bold">Semester</label>
-                      <select
-                        name="semester"
-                        className="form-select"
-                        value={formData.semester}
-                        onChange={handleChange}
-                      >
-                        <option value="">Select semester</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                      </select>
+            <motion.div 
+                className="signup-card glass-card"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+            >
+                <div className="signup-header">
+                    <div className="signup-logo">
+                        <span className="logo-icon">S</span>
                     </div>
-                  )}
-
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">Department</label>
-                    <select
-                      name="department"
-                      className="form-select"
-                      value={formData.department}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select department</option>
-                      <option value="AI & DS">AI & DS</option>
-                      <option value="AI & ML">AI & ML</option>
-                      <option value="CSE">CSE</option>
-                      <option value="IT">IT</option>
-                      <option value="ECE">ECE</option>
-                      <option value="EEE">EEE</option>
-                      <option value="EIE">EIE</option>
-                      <option value="ME">ME</option>
-                      <option value="ISE">ISE</option>
-                      <option value="BT">BT</option>
-                    </select>
-                  </div>
-
-                  {formData.role === 'student' && (
-                    <>
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">Roll No</label>
-                        <input
-                          type="text"
-                          name="rollno"
-                          className="form-control"
-                          placeholder="Enter roll number"
-                          value={formData.rollno}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">Date of Birth</label>
-                        <input
-                          type="date"
-                          name="dob"
-                          className="form-control"
-                          value={formData.dob}
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* Password */}
-              <div className="mb-3">
-                <label className="form-label fw-bold">Password</label>
-                <div className="input-group">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    className="form-control"
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={togglePassword}
-                  >
-                    {showPassword ? "Hide" : "Show"}
-                  </button>
+                    <h2>Create Account</h2>
+                    <p className="text-muted">Join the next generation education platform</p>
                 </div>
-              </div>
 
-              {/* Confirm Password */}
-              <div className="mb-3">
-                <label className="form-label fw-bold">Confirm Password</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  className="form-control"
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-              </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="row">
+                        <div className="col-md-6 mb-3">
+                            <label className="form-label">Full Name</label>
+                            <div className="position-relative">
+                                <i className="bi bi-person input-icon"></i>
+                                <input name="name" type="text" className="input-premium" placeholder="John Doe" value={formData.name} onChange={handleChange} required />
+                            </div>
+                        </div>
+                        <div className="col-md-6 mb-3">
+                            <label className="form-label">Email Address</label>
+                            <div className="position-relative">
+                                <i className="bi bi-envelope input-icon"></i>
+                                <input name="email" type="email" className="input-premium" placeholder="name@company.com" value={formData.email} onChange={handleChange} required />
+                            </div>
+                        </div>
+                    </div>
 
-              {/* Submit */}
-              <div className="d-grid mt-4">
-                <button type="submit" className="btn btn-primary fw-bold">
-                  Sign Up
-                </button>
-              </div>
+                    <div className="mb-4">
+                        <label className="form-label">I am a</label>
+                        <div className="role-selector">
+                            {['student', 'staff', 'admin'].map(r => (
+                                <div 
+                                    key={r}
+                                    className={`role-chip ${formData.role === r ? 'active' : ''}`}
+                                    onClick={() => handleRoleChange(r)}
+                                >
+                                    {r.charAt(0).toUpperCase() + r.slice(1)}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
-              {message && (
-                <div className="alert alert-info mt-3 text-center">
-                  {message}
-                </div>
-              )}
-            </form>
+                    <AnimatePresence mode="wait">
+                        {(formData.role === 'student' || formData.role === 'staff') && (
+                            <motion.div 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="row overflow-hidden"
+                            >
+                                <div className="col-md-6 mb-3">
+                                    <label className="form-label">Department</label>
+                                    <div className="position-relative">
+                                        <i className="bi bi-building input-icon"></i>
+                                        <select name="department" className="select-premium" value={formData.department} onChange={handleChange} required>
+                                            <option value="">Select Dept</option>
+                                            <option value="AI & DS">AI & DS</option>
+                                            <option value="AI & ML">AI & ML</option>
+                                            <option value="CSE">CSE</option>
+                                            <option value="IT">IT</option>
+                                            <option value="ECE">ECE</option>
+                                            <option value="EEE">EEE</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {formData.role === 'student' && (
+                                    <>
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label">Semester</label>
+                                            <div className="position-relative">
+                                                <i className="bi bi-calendar-event input-icon"></i>
+                                                <select name="semester" className="select-premium" value={formData.semester} onChange={handleChange} required>
+                                                    <option value="">Select Sem</option>
+                                                    {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>{s}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label">Roll Number</label>
+                                            <div className="position-relative">
+                                                <i className="bi bi-card-text input-icon"></i>
+                                                <input name="rollno" type="text" className="input-premium" placeholder="22XX01" value={formData.rollno} onChange={handleChange} required />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label">Date of Birth</label>
+                                            <div className="position-relative">
+                                                <i className="bi bi-calendar input-icon"></i>
+                                                <input name="dob" type="date" className="input-premium" value={formData.dob} onChange={handleChange} required />
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-          </div>
+                    <div className="row">
+                        <div className="col-md-6 mb-3">
+                            <label className="form-label">Password</label>
+                            <div className="position-relative">
+                                <i className="bi bi-lock input-icon"></i>
+                                <input name="password" type={showPassword ? "text" : "password"} className="input-premium" placeholder="••••••••" value={formData.password} onChange={handleChange} required />
+                            </div>
+                        </div>
+                        <div className="col-md-6 mb-4">
+                            <label className="form-label">Confirm Password</label>
+                            <div className="position-relative">
+                                <i className="bi bi-shield-lock input-icon"></i>
+                                <input name="confirmPassword" type="password" className="input-premium" placeholder="••••••••" value={formData.confirmPassword} onChange={handleChange} required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" className="btn-premium w-100 mb-3" disabled={isLoading}>
+                        {isLoading ? "Creating Account..." : "Create Account"}
+                    </button>
+
+                    {message && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`alert ${message.includes('success') ? 'alert-success' : 'alert-danger'} py-2 text-center small`}
+                        >
+                            {message}
+                        </motion.div>
+                    )}
+
+                    <div className="signup-footer">
+                        Already have an account? <Link to="/signin">Sign in</Link>
+                    </div>
+                </form>
+            </motion.div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Signup;

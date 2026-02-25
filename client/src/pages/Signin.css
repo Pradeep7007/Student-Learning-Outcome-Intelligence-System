@@ -1,85 +1,169 @@
-/* Signin page specific styles */
+.signin-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-soft);
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+}
 
-@media (max-width: 576px) {
-  .signin-container {
-    padding: 15px;
-  }
-  .brand-icon {
-    width: 45px !important;
-    height: 45px !important;
-  }
-  .card-body {
-    padding: 20px !important;
-  }
-  .signin-title {
+.signin-bg-blobs {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    filter: blur(100px);
+}
+
+.signin-blob {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    opacity: 0.1;
+}
+
+.blob-1 {
+    top: -100px;
+    left: -100px;
+    background: var(--primary);
+}
+
+.blob-2 {
+    bottom: -100px;
+    right: -100px;
+    background: var(--secondary);
+}
+
+.signin-card {
+    width: 100%;
+    max-width: 450px;
+    position: relative;
+    z-index: 1;
+    padding: 2.5rem;
+    border-radius: var(--radius-xl);
+}
+
+.signin-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.signin-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.logo-icon {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 10px;
+    font-weight: 800;
     font-size: 1.5rem;
-  }
-  .signin-subtitle {
-    font-size: 0.85rem;
-  }
-  .form-label {
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-main);
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
-  }
-  .form-control, .form-select, .input-group-text {
-    font-size: 0.95rem;
-    padding: 0.5rem 0.75rem;
-  }
-  .btn {
-    font-size: 0.95rem;
+}
+
+.input-group-premium {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.input-premium {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.8rem;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    background: white;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.input-premium:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.signin-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--text-muted);
+}
+
+.signin-footer a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.forgot-link {
+    display: block;
+    text-align: right;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-top: -1rem;
+    margin-bottom: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.forgot-link:hover {
+    color: var(--primary);
+}
+
+.role-selector {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.role-chip {
+    flex: 1;
+    text-align: center;
     padding: 0.5rem;
-  }
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    background: white;
 }
 
-@media (min-width: 577px) and (max-width: 991px) {
-  .signin-container {
-    padding: 20px;
-  }
-  .brand-icon {
-    width: 55px !important;
-    height: 55px !important;
-  }
-  .card-body {
-    padding: 30px !important;
-  }
-  .signin-title {
-    font-size: 1.8rem;
-  }
-  .signin-subtitle {
-    font-size: 0.9rem;
-  }
-}
-
-@media (min-width: 992px) {
-  .signin-container {
-    padding: 30px;
-  }
-  .brand-icon {
-    width: 60px !important;
-    height: 60px !important;
-  }
-  .card-body {
-    padding: 40px !important;
-  }
-  .signin-title {
-    font-size: 2rem;
-  }
-  .signin-subtitle {
-    font-size: 0.95rem;
-  }
-}
-
-.form-control:focus,
-.form-select:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-.card {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.input-group-text {
-  border-color: #dee2e6;
+.role-chip.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
 }
