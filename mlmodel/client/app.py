@@ -66,7 +66,6 @@ if st.sidebar.button("Predict Outcome"):
                 st.info("Data has been synced with the Academic Intelligence Database.")
                 
             with col2:
-                # Gauge Chart for Prediction
                 fig = px.pie(values=[prediction, 10-prediction], names=['Predicted', 'Remaining'], 
                              hole=0.7, color_discrete_sequence=['#0d6efd', '#e9ecef'])
                 fig.update_layout(showlegend=False, title="Outcome Probability")

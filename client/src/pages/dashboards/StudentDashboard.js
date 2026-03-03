@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import { getAuth, getToken } from '../../utils/auth';
 import { motion } from 'framer-motion';
@@ -44,7 +44,7 @@ const StudentDashboard = () => {
     if (total >= 70) return 'A';
     if (total >= 60) return 'B+';
     if (total >= 50) return 'B';
-    return 'F';
+    return 'RA';
   };
 
   const getSubjectCode = (name) => {
@@ -137,15 +137,15 @@ const StudentDashboard = () => {
           <div className="col-lg-4">
             <div 
               className="p-4 rounded-4 h-100 d-flex flex-column justify-content-center text-center text-white"
-              style={{ backgroundColor: 'blue' }}
+              style={{ backgroundColor: '#323273'}}
             >
               <h4 className="fw-bold mb-3">Predicted Outcome</h4>
               <div className="text-center">
-  <h1 className="display-1 fw-bold mb-0">
-    {prediction?.predictedCGPA || "--"}
-  </h1>
-  <p className="mb-0">CGPA</p>
-</div>
+                <h1 className="display-1 fw-bold mb-0">
+                  {prediction?.predictedCGPA || "--"}
+                </h1>
+                <p className="mb-0">CGPA</p>
+              </div>
             </div>
           </div>
         </div>
