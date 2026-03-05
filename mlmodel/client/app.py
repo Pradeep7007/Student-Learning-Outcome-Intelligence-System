@@ -83,7 +83,7 @@ if st.sidebar.button("Predict Outcome"):
             st.plotly_chart(fig_bar, use_container_width=True)
             
     else:
-        st.error("Please fill in all identity fields (Name, Roll No, Email)")
+        st.error("please fill in all identity fields (Name, Roll No, Email)")
 
 # Dashboard Preview (Static Demo Data)
 st.markdown("---")
