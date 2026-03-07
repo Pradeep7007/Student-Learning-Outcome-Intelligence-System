@@ -2,7 +2,24 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import { getAuth, getToken } from '../../utils/auth';
 
+const AdminDashboard = () => {
+  const [stats, setStats] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('students'); // students, staff, admins
+  const [editingUser, setEditingUser] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    semester: '',
+    department: '',
+    rollno: '',
+    dob: ''
+  });
   
   const user = getAuth();
 
