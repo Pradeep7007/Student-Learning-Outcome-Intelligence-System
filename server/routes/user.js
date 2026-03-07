@@ -192,4 +192,155 @@ router.get('/stats', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/user/all-users
+// @desc    Get all users with their profile data (Admin only)
+router.get('/all-users', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    const users = await User.find().select('-password');
+    const enrichedUsers = await Promise.all(users.map(async (user) => {
+      let profile = null;
+      if (user.role === 'student') {
+        profile = await Student.findOne({ userId: user._id });
+      } else if (user.role === 'staff') {
+        profile = await Staff.findOne({ userId: user._id });
+      } else if (user.role === 'admin') {
+        profile = await Admin.findOne({ userId: user._id });
+      }
+      return { ...user.toObject(), profile };
+    }));
+
+    res.json(enrichedUsers);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   PUT api/user/update/:id
+// @desc    Update user and profile (Admin only)
+router.put('/update/:id', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.id !== req.params.id) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    const { name, email, semester, department, rollno, dob } = req.body;
+    
+    // Find user
+    let user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Update base user
+    if (name) user.name = name;
+    if (email) user.email = email;
+    await user.save();
+
+    // Update role-specific profile
+    if (user.role === 'student') {
+      let profile = await Student.findOne({ userId: user._id });
+      if (profile) {
+        if (name) profile.name = name;
+        if (email) profile.email = email;
+        if (semester) profile.semester = semester;
+        if (department) profile.department = department;
+        if (rollno) profile.rollno = rollno;
+        if (dob) profile.dob = dob;
+        await profile.save();
+
+        // Also update AcademicRecord and MLPredict for consistency
+        if (name || email) {
+          const updateFields = {};
+          if (name) updateFields.studentName = name;
+          if (email) updateFields.email = email;
+          
+          await AcademicRecord.updateMany({ rollno: profile.rollno }, { $set: updateFields });
+          await MLPredict.updateMany({ rollno: profile.rollno }, { $set: updateFields });
+        }
+      }
+    } else if (user.role === 'staff') {
+      let profile = await Staff.findOne({ userId: user._id });
+      if (profile) {
+        if (name) profile.name = name;
+        if (email) profile.email = email;
+        if (department) profile.department = department;
+        await profile.save();
+      }
+    } else if (user.role === 'admin') {
+      let profile = await Admin.findOne({ userId: user._id });
+      if (profile) {
+        if (name) profile.name = name;
+        if (email) profile.email = email;
+        await profile.save();
+      }
+    }
+
+    res.json({ message: 'User updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   DELETE api/user/delete/:id
+// @desc    Delete user and profile (Admin only)
+router.delete('/delete/:id', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Delete role-specific profile
+    if (user.role === 'student') {
+      await Student.deleteOne({ userId: user._id });
+      // Also delete academic records and predictions?
+      await AcademicRecord.deleteMany({ email: user.email });
+      await MLPredict.deleteMany({ email: user.email });
+    } else if (user.role === 'staff') {
+      await Staff.deleteOne({ userId: user._id });
+    } else if (user.role === 'admin') {
+      await Admin.deleteOne({ userId: user._id });
+    }
+
+    // Delete base user
+    await User.findByIdAndDelete(req.params.id);
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   PUT api/user/modify-password/:id
+// @desc    Modify user password (Admin only)
+router.put('/modify-password/:id', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.id !== req.params.id) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    const { password } = req.body;
+    if (!password) return res.status(400).json({ message: 'Password is required' });
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.password = password; // Will be hashed by pre-save hook
+    await user.save();
+
+    res.json({ message: 'Password modified successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;
+
