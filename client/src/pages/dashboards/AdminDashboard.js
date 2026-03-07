@@ -345,7 +345,7 @@ const AdminDashboard = () => {
                         value={newPassword} 
                         onChange={(e) => setNewPassword(e.target.value)} 
                         required 
-                        minLength="6"
+                        minLength="1"
                       />
                     </div>
                     <div className="text-end">
