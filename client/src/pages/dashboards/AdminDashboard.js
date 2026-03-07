@@ -315,7 +315,15 @@ const AdminDashboard = () => {
                           </div>
                           <div className="col-md-4">
                             <label className="form-label small fw-bold">Department</label>
-                            <input type="text" className="form-control" value={formData.department} onChange={(e) => setFormData({...formData, department: e.target.value})} />
+                            <select className="form-select" value={formData.department} onChange={(e) => setFormData({...formData, department: e.target.value})}>
+                              <option value="">Select Dept</option>
+                              <option value="AI & DS">AI & DS</option>
+                              <option value="AI & ML">AI & ML</option>
+                              <option value="CSE">CSE</option>
+                              <option value="IT">IT</option>
+                              <option value="ECE">ECE</option>
+                              <option value="EEE">EEE</option>
+                            </select>
                           </div>
                           <div className="col-md-4">
                             <label className="form-label small fw-bold">Roll Number</label>
@@ -331,7 +339,15 @@ const AdminDashboard = () => {
                       {editingUser.role === 'staff' && (
                         <div className="col-md-6">
                           <label className="form-label small fw-bold">Department</label>
-                          <input type="text" className="form-control" value={formData.department} onChange={(e) => setFormData({...formData, department: e.target.value})} />
+                          <select className="form-select" value={formData.department} onChange={(e) => setFormData({...formData, department: e.target.value})}>
+                            <option value="">Select Dept</option>
+                            <option value="AI & DS">AI & DS</option>
+                            <option value="AI & ML">AI & ML</option>
+                            <option value="CSE">CSE</option>
+                            <option value="IT">IT</option>
+                            <option value="ECE">ECE</option>
+                            <option value="EEE">EEE</option>
+                          </select>
                         </div>
                       )}
                     </div>
