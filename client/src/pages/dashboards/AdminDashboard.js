@@ -2,34 +2,13 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import { getAuth, getToken } from '../../utils/auth';
 
-const AdminDashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('students'); // students, staff, admins
-  const [editingUser, setEditingUser] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    semester: '',
-    department: '',
-    rollno: '',
-    dob: ''
-  });
-  const [adminData, setAdminData] = useState({
-    name: '',
-    email: ''
-  });
+  const [searchQuery, setSearchQuery] = useState('');
   
   const user = getAuth();
 
   useEffect(() => {
     fetchStats();
     fetchAllUsers();
-    setAdminData({ name: user.name, email: user.email });
   }, []);
 
   const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -133,31 +112,14 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleAdminUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(`${apiBase}/api/user/update/${user.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': getToken()
-        },
-        body: JSON.stringify(adminData)
-      });
-      if (res.ok) {
-        alert('Admin profile updated successfully. Please re-login to see changes in Navbar.');
-        // Update local storage if needed, but the server has updated.
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const filteredUsers = users.filter(u => {
-    if (activeTab === 'students') return u.role === 'student';
-    if (activeTab === 'staff') return u.role === 'staff';
-    if (activeTab === 'admins') return u.role === 'admin';
-    return true;
+    const matchesTab = activeTab === 'students' ? u.role === 'student' :
+                       activeTab === 'staff' ? u.role === 'staff' :
+                       activeTab === 'admins' ? u.role === 'admin' : true;
+    const matchesSearch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          u.email.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTab && matchesSearch;
   });
 
   return (
@@ -200,46 +162,30 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* ADMIN ACCOUNT SETTINGS */}
-        <div className="card border-0 shadow-sm mb-5">
-          <div className="card-header bg-white py-3">
-             <h5 className="mb-0 fw-bold">Account Settings (Self)</h5>
-          </div>
-          <div className="card-body p-4">
-            <form onSubmit={handleAdminUpdate} className="row g-3 align-items-end">
-              <div className="col-md-5">
-                <label className="form-label small fw-bold text-muted">Update Name</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  value={adminData.name} 
-                  onChange={(e) => setAdminData({...adminData, name: e.target.value})} 
-                />
-              </div>
-              <div className="col-md-5">
-                <label className="form-label small fw-bold text-muted">Update Email</label>
-                <input 
-                  type="email" 
-                  className="form-control" 
-                  value={adminData.email} 
-                  onChange={(e) => setAdminData({...adminData, email: e.target.value})} 
-                />
-              </div>
-              <div className="col-md-2">
-                <button type="submit" className="btn btn-primary w-100">Update Profile</button>
-              </div>
-            </form>
-          </div>
-        </div>
 
         {/* USER MANAGEMENT */}
         <div className="card border-0 shadow-sm overflow-hidden">
-          <div className="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-             <h5 className="mb-0 fw-bold">User Management</h5>
-             <div className="btn-group btn-group-sm">
-                <button className={`btn ${activeTab === 'students' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setActiveTab('students')}>Students</button>
-                <button className={`btn ${activeTab === 'staff' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setActiveTab('staff')}>Teachers</button>
-                <button className={`btn ${activeTab === 'admins' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setActiveTab('admins')}>Admins</button>
+          <div className="card-header bg-white border-bottom-0 pt-4 px-4">
+             <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+               <h5 className="mb-0 fw-bold">User Management</h5>
+               <div className="d-flex flex-column flex-md-row gap-2">
+                 <div className="position-relative">
+                   <input 
+                     type="text" 
+                     className="form-control form-control-sm ps-4" 
+                     placeholder="Search by name or email..." 
+                     style={{ width: '250px' }}
+                     value={searchQuery}
+                     onChange={(e) => setSearchQuery(e.target.value)}
+                   />
+                   <i className="bi bi-search position-absolute start-0 top-50 translate-middle-y ms-2 text-muted" style={{ fontSize: '0.8rem' }}></i>
+                 </div>
+                 <div className="btn-group btn-group-sm">
+                    <button className={`btn ${activeTab === 'students' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setActiveTab('students')}>Students</button>
+                    <button className={`btn ${activeTab === 'staff' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setActiveTab('staff')}>Teachers</button>
+                    <button className={`btn ${activeTab === 'admins' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setActiveTab('admins')}>Admins</button>
+                 </div>
+               </div>
              </div>
           </div>
           <div className="card-body p-0 mt-3">
