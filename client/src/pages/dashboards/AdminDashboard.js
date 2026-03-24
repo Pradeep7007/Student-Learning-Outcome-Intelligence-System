@@ -27,6 +27,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchStats();
     fetchAllUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const apiBase = API_BASE_URL;
