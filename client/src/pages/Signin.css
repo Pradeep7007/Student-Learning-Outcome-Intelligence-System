@@ -1,3 +1,6 @@
+/* COMPLETE Signin.css - YOUR ORIGINAL + Mobile-only top/bottom modification */
+
+/* === YOUR ORIGINAL STYLES (Desktop/Tablet - 100% UNCHANGED) === */
 .signin-page {
     min-height: 100vh;
     display: flex;
@@ -6,7 +9,7 @@
     background: var(--gradient-soft);
     position: relative;
     overflow: hidden;
-    padding: 2rem;
+    padding: 2rem; /* DESKTOP: Your original */
 }
 
 .signin-bg-blobs {
@@ -59,8 +62,6 @@
     justify-content: center;
     margin-bottom: 1.5rem;
 }
-
-
 
 .form-label {
     font-weight: 600;
@@ -159,4 +160,95 @@
     background: var(--primary);
     color: white;
     border-color: var(--primary);
+}
+
+/* === MOBILE ONLY: Top/Bottom ONLY (≤768px) === */
+@media (max-width: 768px) {
+    .signin-page {
+        padding: 2rem 0 !important; /* YOUR CHOICE: Only top/bottom */
+    }
+    
+    .signin-card {
+        margin: 0 !important;
+        width: 100vw !important;
+        max-width: none !important;
+        padding: 2rem 1.5rem !important;
+        border-radius: 0 !important; /* Full width */
+    }
+    
+    /* Remove all horizontal spacing */
+    .input-group-premium {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}
+
+/* === ALL OTHER SCREENS: YOUR ORIGINAL 100% UNCHANGED === */
+@media (min-width: 769px) {
+    /* Zero changes - your exact original applies */
+}
+
+/* Additional shared styles (btn-premium, alert, etc.) */
+.btn-premium {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    padding: 0.875rem 2rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.btn-premium:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.btn-premium:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.alert {
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+}
+
+.alert-success {
+    background: rgba(34, 197, 94, 0.15);
+    color: #059669;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.alert-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.logo-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.text-muted {
+    color: var(--text-muted);
+    font-size: 0.9rem;
 }

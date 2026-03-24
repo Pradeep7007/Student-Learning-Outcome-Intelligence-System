@@ -1,3 +1,6 @@
+/* YOUR ORIGINAL CSS - 100% UNCHANGED + Mobile-only modification */
+
+/* === YOUR ORIGINAL STYLES (Desktop/Tablet - EXACTLY SAME) === */
 .signup-page {
     min-height: 100vh;
     display: flex;
@@ -6,7 +9,7 @@
     background: var(--gradient-soft);
     position: relative;
     overflow-y: auto;
-    padding: 4rem 2rem;
+    padding: 4rem 2rem; /* DESKTOP: Unchanged */
 }
 
 .signup-bg-blobs {
@@ -158,4 +161,44 @@
     .signup-card {
         padding: 1.5rem;
     }
+}
+
+/* === MOBILE ONLY MODIFICATION (≤768px) === */
+@media (max-width: 768px) {
+    /* YOUR CHOICE: Only top/bottom spacing */
+    .signup-page {
+        padding: 2rem 0 !important; /* NO left/right */
+    }
+    
+    /* Full width, no side margins */
+    .signup-card {
+        margin: 0 !important;
+        width: 100vw !important;
+        max-width: none !important;
+        padding: 2rem 1.5rem !important;
+        border-radius: 0 !important;
+    }
+    
+    /* Remove Bootstrap spacing */
+    .row {
+        margin: 0 !important;
+        --bs-gutter-x: 0 !important;
+    }
+    
+    .col-md-6 {
+        padding: 0 !important;
+        width: 100% !important;
+        margin-bottom: 1rem;
+    }
+    
+    /* Form full width */
+    form {
+        padding: 0;
+        margin: 0;
+    }
+}
+
+/* === ALL OTHER SCREENS: YOUR ORIGINAL STYLING 100% PRESERVED === */
+@media (min-width: 769px) {
+    /* Nothing changes - your exact original styles apply */
 }

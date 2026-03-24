@@ -495,19 +495,7 @@ const StaffDashboard = () => {
             </div>
           </div>
 
-          {stats?.deptStats?.map((dept, index) => (
-            <div key={index} className="col-6 col-md-3 col-lg-2">
-              <div className="card border-0 shadow-sm p-3 text-center h-100 bg-white">
-                <h6
-                  className="text-muted text-uppercase fw-bold mb-1"
-                  style={{ fontSize: '0.65rem' }}
-                >
-                  {dept._id}
-                </h6>
-                <h4 className="fw-bold text-primary m-0">{dept.count}</h4>
-              </div>
-            </div>
-          ))}
+          
         </div>
       </div>
     </div>
