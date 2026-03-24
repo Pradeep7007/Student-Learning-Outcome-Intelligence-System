@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const User = require('../models/User');
@@ -113,24 +112,19 @@ router.post('/login', async (req, res) => {
       }
     };
 
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' },
-      (err, token) => {
-        if (err) throw err;
-        res.json({
-          token,
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role
-          },
-          message: 'Login successful'
-        });
-      }
-    );
+    const payload = { user: { id: user.id, role: user.role } };
+    const token = Buffer.from(JSON.stringify(payload)).toString('base64');
+    
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      },
+      message: 'Login successful'
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ message: 'Server error: ' + err.message });
