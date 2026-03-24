@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import { getAuth, getToken } from '../../utils/auth';
 import { SUBJECTS_MAP } from '../../utils/subjects';
+import API_BASE_URL from '../../config';
 
 const StaffDashboard = () => {
   const [profile, setProfile] = useState(null);
@@ -15,7 +16,7 @@ const StaffDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const apiBase = API_BASE_URL;
         const headers = { 'x-auth-token': getToken() };
         
         // Fetch Profile
@@ -66,7 +67,7 @@ const StaffDashboard = () => {
     if (!selectedStudent) return;
 
     try {
-      const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const apiBase = API_BASE_URL;
       const semester = selectedStudent.semester;
       const dept = selectedStudent.department;
       const subjectsList = SUBJECTS_MAP[dept]?.[semester] || [];

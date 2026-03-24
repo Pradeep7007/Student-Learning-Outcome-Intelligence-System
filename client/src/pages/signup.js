@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Signup.css';
+import API_BASE_URL from '../config';
 
 const Signup = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -40,7 +41,7 @@ const Signup = () => {
 
         setIsLoading(true);
         try {
-            const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+            const apiBase = API_BASE_URL;
             const res = await fetch(`${apiBase}/api/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

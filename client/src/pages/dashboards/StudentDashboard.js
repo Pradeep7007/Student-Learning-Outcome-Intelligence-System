@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import { getAuth, getToken } from '../../utils/auth';
 import { motion } from 'framer-motion';
+import API_BASE_URL from '../../config';
 
 const StudentDashboard = () => {
   const [profile, setProfile] = useState(null);
@@ -12,7 +13,7 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const apiBase = API_BASE_URL;
         const headers = { 'x-auth-token': getToken() };
         
         const res = await fetch(`${apiBase}/api/user/profile`, { headers });

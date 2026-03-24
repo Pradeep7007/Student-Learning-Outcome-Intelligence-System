@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { setAuth } from '../utils/auth';
 import { motion } from 'framer-motion';
 import './Signin.css';
+import API_BASE_URL from '../config';
 
 const Signin = () => {
     const [role, setRole] = useState('student');
@@ -26,7 +27,7 @@ const Signin = () => {
         setIsLoading(true);
         setMessage('');
         try {
-            const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+            const apiBase = API_BASE_URL;
             const res = await fetch(`${apiBase}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -165,7 +166,7 @@ const Signin = () => {
                         <div className="d-flex gap-2 mb-3">
                             <button className="btn btn-sm btn-primary flex-grow-1" onClick={async () => {
                                 try {
-                                    const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+                                    const apiBase = API_BASE_URL;
                                     const res = await fetch(`${apiBase}/api/auth/forgot-password`, {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
@@ -195,7 +196,7 @@ const Signin = () => {
                                 />
                                 <button className="btn btn-sm btn-success w-100" onClick={async () => {
                                     try {
-                                        const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+                                        const apiBase = API_BASE_URL;
                                         const res = await fetch(`${apiBase}/api/auth/reset-password`, {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },

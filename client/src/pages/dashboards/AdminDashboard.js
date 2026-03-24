@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import { getAuth, getToken } from '../../utils/auth';
+import API_BASE_URL from '../../config';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -28,7 +29,7 @@ const AdminDashboard = () => {
     fetchAllUsers();
   }, []);
 
-  const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiBase = API_BASE_URL;
 
   const fetchStats = async () => {
     try {
