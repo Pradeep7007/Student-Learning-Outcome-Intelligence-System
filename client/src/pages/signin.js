@@ -306,8 +306,7 @@ const Signin = () => {
                                     className="form-control form-control-sm mb-2" 
                                     readOnly 
                                     value={resetToken} 
-                                />
-                                <input 
+                                />                                <input 
                                     className="form-control form-control-sm mb-2" 
                                     type="password" 
                                     placeholder="New password" 
