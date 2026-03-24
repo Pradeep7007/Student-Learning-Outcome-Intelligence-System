@@ -133,7 +133,7 @@ router.post('/login', async (req, res) => {
     );
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error: ' + err.message });
   }
 });
 
@@ -152,7 +152,7 @@ router.post('/forgot-password', async (req, res) => {
     res.json({ message: 'Token generated', token });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error: ' + err.message });
   }
 });
 
@@ -175,7 +175,7 @@ router.post('/reset-password', async (req, res) => {
     res.json({ message: 'Password reset successful' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error: ' + err.message });
   }
 });
 
