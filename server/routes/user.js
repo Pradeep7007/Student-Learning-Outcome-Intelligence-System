@@ -177,15 +177,29 @@ router.get('/stats', auth, async (req, res) => {
     }
 
     const totalStudents = await Student.countDocuments(filter);
+    const totalStaff = await Staff.countDocuments(filter);
     
-    // Aggregate students by department with filter
     const matchStage = Object.keys(filter).length > 0 ? [{ $match: filter }] : [];
+    
     const deptStats = await Student.aggregate([
       ...matchStage,
       { $group: { _id: "$department", count: { $sum: 1 } } }
     ]);
+    
+    const staffStats = await Staff.aggregate([
+      ...matchStage,
+      { $group: { _id: "$department", count: { $sum: 1 } } }
+    ]);
 
-    res.json({ totalStudents, deptStats });
+    const merged = {};
+    deptStats.forEach(d => merged[d._id] = { _id: d._id || 'Unknown', students: d.count, staff: 0 });
+    staffStats.forEach(s => {
+      const id = s._id || 'Unknown';
+      if (!merged[id]) merged[id] = { _id: id, students: 0, staff: 0 };
+      merged[id].staff = s.count;
+    });
+
+    res.json({ totalStudents, totalStaff, deptStats: Object.values(merged) });
   } catch (err) {
     console.error(err);
     res.status(500).send('Server Error');

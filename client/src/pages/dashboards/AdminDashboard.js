@@ -136,8 +136,9 @@ const AdminDashboard = () => {
     const matchesTab = activeTab === 'students' ? u.role === 'student' :
                        activeTab === 'staff' ? u.role === 'staff' :
                        activeTab === 'admins' ? u.role === 'admin' : true;
-    const matchesSearch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          u.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const nameMatch = u.name ? u.name.toLowerCase().includes(searchQuery.toLowerCase()) : false;
+    const emailMatch = u.email ? u.email.toLowerCase().includes(searchQuery.toLowerCase()) : false;
+    const matchesSearch = nameMatch || emailMatch;
     return matchesTab && matchesSearch;
   });
 
@@ -170,10 +171,23 @@ const AdminDashboard = () => {
                     <h2 className="fw-bold m-0">{stats?.totalStudents || 0}</h2>
                     <h6 className="text-muted text-uppercase m-0" style={{ fontSize: '0.65rem' }}>Students</h6>
                   </div>
+                  <div className="col-auto me-4 border-start ps-4">
+                    <h2 className="fw-bold m-0">{stats?.totalStaff || 0}</h2>
+                    <h6 className="text-muted text-uppercase m-0" style={{ fontSize: '0.65rem' }}>Staff</h6>
+                  </div>
                   {stats?.deptStats?.map((dept, index) => (
                     <div key={index} className="col-auto border-start ps-4">
-                      <h4 className="fw-bold m-0">{dept.count}</h4>
-                      <h6 className="text-muted text-uppercase m-0" style={{ fontSize: '0.65rem' }}>{dept._id}</h6>
+                      <div className="d-flex gap-3">
+                         <div>
+                            <span className="fw-bold fs-5">{dept.students}</span>
+                            <span className="text-muted ms-1" style={{ fontSize: '0.7rem' }}>STU</span>
+                         </div>
+                         <div>
+                            <span className="fw-bold fs-5">{dept.staff}</span>
+                            <span className="text-muted ms-1" style={{ fontSize: '0.7rem' }}>STF</span>
+                         </div>
+                      </div>
+                      <h6 className="text-muted text-uppercase mt-1 mb-0" style={{ fontSize: '0.65rem' }}>{dept._id}</h6>
                     </div>
                   ))}
                </div>
@@ -227,7 +241,7 @@ const AdminDashboard = () => {
                   ) : filteredUsers.map((u) => (
                     <tr key={u._id}>
                       <td className="px-4 py-3">
-                        <div className="fw-bold">{u.name}</div>
+                        <div className="fw-bold">{u.name || "Unknown"}</div>
                         <div className="small text-muted">{u.email}</div>
                       </td>
                       {activeTab === 'students' && <td>{u.profile?.rollno || 'N/A'}</td>}
