@@ -105,15 +105,8 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid Credentials' });
     }
 
-    const payload = {
-      user: {
-        id: user.id,
-        role: user.role
-      }
-    };
-
-    const payload = { user: { id: user.id, role: user.role } };
-    const token = Buffer.from(JSON.stringify(payload)).toString('base64');
+    const tokenPayload = { user: { id: user.id, role: user.role } };
+    const token = Buffer.from(JSON.stringify(tokenPayload)).toString('base64');
     
     res.json({
       token,
