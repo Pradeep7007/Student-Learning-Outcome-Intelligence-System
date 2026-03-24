@@ -33,7 +33,12 @@ const Signin = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password, role })
             });
-            const data = await res.json();
+            let data;
+            try {
+                data = await res.json();
+            } catch {
+                data = { message: "Invalid server response" };
+            }
             if (!res.ok) {
                 setMessage(data.message || 'Login failed');
                 setIsLoading(false);
@@ -172,7 +177,12 @@ const Signin = () => {
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ email: forgotEmail })
                                     });
-                                    const data = await res.json();
+                                    let data;
+            try {
+                data = await res.json();
+            } catch {
+                data = { message: "Invalid server response" };
+            }
                                     if (res.ok) {
                                         setResetToken(data.token || '');
                                         setMessage('Reset token generated');
@@ -202,7 +212,12 @@ const Signin = () => {
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ token: resetToken, password: newPassword })
                                         });
-                                        const data = await res.json();
+                                        let data;
+            try {
+                data = await res.json();
+            } catch {
+                data = { message: "Invalid server response" };
+            }
                                         if (res.ok) {
                                             setMessage('Password reset successful');
                                             setShowForgot(false);
