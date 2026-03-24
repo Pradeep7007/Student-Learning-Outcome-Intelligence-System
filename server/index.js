@@ -28,5 +28,6 @@ app.use('/api/user', require('./routes/user'));
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
+//verify all errors
 
 module.exports = app;
