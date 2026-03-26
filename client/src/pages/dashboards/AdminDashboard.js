@@ -80,7 +80,6 @@ const AdminDashboard = () => {
         headers: { 'x-auth-token': getToken() }
       });
       if (res.ok) {
-        alert('User deleted successfully');
         fetchAllUsers();
         fetchStats();
       }
@@ -101,7 +100,6 @@ const AdminDashboard = () => {
         body: JSON.stringify(formData)
       });
       if (res.ok) {
-        alert('User updated successfully');
         setShowEditModal(false);
         fetchAllUsers();
       }
@@ -122,7 +120,6 @@ const AdminDashboard = () => {
         body: JSON.stringify({ password: newPassword })
       });
       if (res.ok) {
-        alert('Password updated successfully');
         setShowPasswordModal(false);
         setNewPassword('');
       }
