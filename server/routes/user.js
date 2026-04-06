@@ -58,8 +58,18 @@ router.get('/students-in-dept', auth, async (req, res) => {
     const staffProfile = await Staff.findOne({ userId: req.user.id });
     if (!staffProfile) return res.status(404).json({ message: 'Staff profile not found' });
 
-    const students = await Student.find({ department: staffProfile.department });
-    res.json(students);
+    const students = await Student.find({ department: staffProfile.department }).lean();
+    
+    const rollnos = students.map(s => s.rollno);
+    const predictions = await MLPredict.find({ rollno: { $in: rollnos } }).lean();
+
+    const enrichedStudents = students.map(student => {
+      // Find the prediction matching rollno and semester
+      const pred = predictions.find(p => p.rollno === student.rollno && p.semester === student.semester);
+      return { ...student, predictedCGPA: pred ? pred.predictedCGPA : null };
+    });
+
+    res.json(enrichedStudents);
   } catch (err) {
     console.error(err);
     res.status(500).send('Server Error');

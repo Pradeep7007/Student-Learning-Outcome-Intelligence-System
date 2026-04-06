@@ -12,6 +12,8 @@ const StaffDashboard = () => {
   const [marks, setMarks] = useState({});
   const [message, setMessage] = useState('');
   const [extraData, setExtraData] = useState({ cgpa: '', attendance: '' });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const user = getAuth();
 
   useEffect(() => {
@@ -47,6 +49,51 @@ const StaffDashboard = () => {
   const filteredStudents = profile
     ? students.filter((s) => s.department === profile.department)
     : [];
+
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const processedStudents = React.useMemo(() => {
+    let searchableStudents = [...filteredStudents];
+
+    if (searchTerm) {
+      searchableStudents = searchableStudents.filter((student) => 
+        (student.name && student.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (student.rollno && String(student.rollno).toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (student.semester && String(student.semester).toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    if (sortConfig.key !== null) {
+      searchableStudents.sort((a, b) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+
+        if (sortConfig.key === 'predictedCGPA') {
+            aVal = aVal || 0;
+            bVal = bVal || 0;
+        } else {
+            aVal = aVal ? String(aVal).toLowerCase() : '';
+            bVal = bVal ? String(bVal).toLowerCase() : '';
+        }
+
+        if (aVal < bVal) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aVal > bVal) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    
+    return searchableStudents;
+  }, [filteredStudents, searchTerm, sortConfig]);
 
   const handleStudentSelect = (e) => {
     const studentId = e.target.value;
@@ -475,6 +522,93 @@ const StaffDashboard = () => {
                   </form>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+
+        <hr className="my-5 opacity-10" />
+
+        <div className="row mb-5">
+          <div className="col-12">
+            <div className="card border-0 shadow-sm p-4">
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h5 className="fw-bold mb-0">Predicted CGPA (Department Students)</h5>
+                <div className="input-group" style={{ maxWidth: '300px' }}>
+                  <span className="input-group-text bg-white border-end-0">
+                    <i className="bi bi-search text-muted"></i>
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control border-start-0 ps-0"
+                    placeholder="Search by name, roll no, sem..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('rollno')}>
+                        Roll No {sortConfig.key === 'rollno' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                      </th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>
+                        Name {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                      </th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('semester')}>
+                        Semester {sortConfig.key === 'semester' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                      </th>
+                      <th>Department</th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('predictedCGPA')}>
+                        Predicted CGPA {sortConfig.key === 'predictedCGPA' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {processedStudents.length > 0 ? (
+                      processedStudents.map((student) => (
+                        <tr key={student._id}>
+                          <td>{student.rollno}</td>
+                          <td className="fw-bold text-primary">{student.name}</td>
+                          <td>{student.semester}</td>
+                          <td>
+                            <span className="badge bg-secondary">
+                              {student.department}
+                            </span>
+                          </td>
+                          <td>
+                            {student.predictedCGPA ? (
+                              <span
+                                className={`badge ${
+                                  student.predictedCGPA >= 8.0
+                                    ? 'bg-success'
+                                    : student.predictedCGPA >= 6.0
+                                    ? 'bg-warning text-dark'
+                                    : 'bg-danger'
+                                } px-3 py-2`}
+                                style={{ fontSize: '0.85rem' }}
+                              >
+                                {Number(student.predictedCGPA).toFixed(2)}
+                              </span>
+                            ) : (
+                              <span className="text-muted small fst-italic">
+                                Not Predicted
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" className="text-center py-4 text-muted">
+                          No students found in your department.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
