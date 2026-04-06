@@ -575,7 +575,7 @@ const StaffDashboard = () => {
                           <td className="fw-bold text-primary">{student.name}</td>
                           <td>{student.semester}</td>
                           <td>
-                            <span className="badge bg-secondary">
+                            <span className="badge bg-danger">
                               {student.department}
                             </span>
                           </td>
