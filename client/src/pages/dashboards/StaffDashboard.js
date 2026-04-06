@@ -46,9 +46,11 @@ const StaffDashboard = () => {
   }, []);
 
   // Only students from the logged‑in staff's department
-  const filteredStudents = profile
-    ? students.filter((s) => s.department === profile.department)
-    : [];
+  const filteredStudents = React.useMemo(() => {
+    return profile
+      ? students.filter((s) => s.department === profile.department)
+      : [];
+  }, [profile, students]);
 
   const handleSort = (key) => {
     let direction = 'asc';
