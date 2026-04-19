@@ -19,8 +19,14 @@ const StaffDashboard = () => {
   const [loadingDetail, setLoadingDetail] = useState(false);
   
   const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [activeCategory, setActiveCategory] = useState(null); // 'risk', 'medium', 'high'
+  const [activeCategory, setActiveCategory] = useState(null); 
 
+  const [staffQueries, setStaffQueries] = useState([]);
+  const [queryStatusFilter, setQueryStatusFilter] = useState('All');
+  const [reviewingQuery, setReviewingQuery] = useState(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ status: '', staffComment: '' });
+  const [reviewMessage, setReviewMessage] = useState('');
   const user = getAuth();
 
   useEffect(() => {
@@ -45,12 +51,66 @@ const StaffDashboard = () => {
         });
         const stData = await stRes.json();
         if (stRes.ok) setStudents(stData);
+
+        // Fetch Staff Queries
+        const qRes = await fetch(`${apiBase}/api/query/staff-queries`, { headers });
+        if (qRes.ok) {
+            const qData = await qRes.json();
+            setStaffQueries(qData);
+        }
       } catch (err) {
         console.error(err);
       }
     };
     fetchData();
   }, []);
+
+  const fetchStaffQueries = async () => {
+    try {
+      const headers = { 'x-auth-token': getToken() };
+      const res = await fetch(`${API_BASE_URL}/api/query/staff-queries`, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        setStaffQueries(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleQueryUpdate = async (e) => {
+    e.preventDefault();
+    if (!reviewingQuery) return;
+
+    try {
+      const headers = { 
+        'Content-Type': 'application/json',
+        'x-auth-token': getToken() 
+      };
+      
+      const res = await fetch(`${API_BASE_URL}/api/query/update/${reviewingQuery._id}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify(reviewForm)
+      });
+
+      if (res.ok) {
+        setReviewMessage('Query updated successfully!');
+        fetchStaffQueries();
+        setTimeout(() => {
+          setShowReviewModal(false);
+          setReviewingQuery(null);
+          setReviewMessage('');
+        }, 1500);
+      } else {
+        const data = await res.json();
+        setReviewMessage(data.message || 'Failed to update query');
+      }
+    } catch (err) {
+      console.error(err);
+      setReviewMessage('Error updating query');
+    }
+  };
 
   // Only students from the logged‑in staff's department
   const filteredStudents = React.useMemo(() => {
@@ -70,25 +130,32 @@ const StaffDashboard = () => {
         s.academicRecord.subjects &&
         s.academicRecord.subjects.length > 0
       ) {
-        const subjectTotals = s.academicRecord.subjects.map(
-          (sub) => sub.internalMark + sub.assignmentMark + sub.practicalMark
-        );
+        const subjectsWithTotals = s.academicRecord.subjects.map((sub) => ({
+          name: sub.name,
+          total: sub.internalMark + sub.assignmentMark + sub.practicalMark,
+        }));
 
-        // Rule: High Level (>= 85 in all subjects)
+        const subjectTotals = subjectsWithTotals.map((st) => st.total);
+
+        // Rule 1: At Risk (ANY subject < 60 marks)
+        const failedSubjectsList = subjectsWithTotals
+          .filter((st) => st.total < 60)
+          .map((st) => st.name);
+
+        if (failedSubjectsList.length > 0) {
+          risk.push({ ...s, failedSubjects: failedSubjectsList });
+          return; // Priority 1: Risk
+        }
+
+        // Rule 2: High Level (>= 85 in ALL subjects)
         if (subjectTotals.every((total) => total >= 85)) {
           high.push(s);
           return;
         }
 
-        // Rule: Medium Level (>= 70 in all subjects)
+        // Rule 3: Medium Level (>= 70 in ALL subjects)
         if (subjectTotals.every((total) => total >= 70)) {
           medium.push(s);
-          return;
-        }
-
-        // Rule: At Risk (< 56 in all subjects)
-        if (subjectTotals.every((total) => total < 56)) {
-          risk.push(s);
           return;
         }
       }
@@ -750,6 +817,108 @@ const StaffDashboard = () => {
 
         <hr className="my-5 opacity-10" />
 
+        <div className="row mb-5">
+            <div className="col-12">
+                <div className="card border-0 shadow-sm overflow-hidden">
+                    <div className="p-4 border-bottom bg-white d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 className="fw-bold mb-1">Student Mark Discrepancies</h5>
+                            <p className="text-muted small mb-0">Review and resolve doubts raised by students in your department</p>
+                        </div>
+                        <span className="badge bg-warning text-dark rounded-pill px-3 py-2">
+                            {staffQueries.filter(q => q.status === 'Pending').length} Pending Tasks
+                        </span>
+                    </div>
+                    <div className="px-4 py-3 bg-light bg-opacity-50 border-bottom d-flex gap-2 flex-wrap">
+                        {['All', 'Pending', 'Reviewed', 'Resolved', 'Rejected'].map(status => (
+                            <button
+                                key={status}
+                                className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${
+                                    queryStatusFilter === status 
+                                    ? 'btn-primary shadow-sm' 
+                                    : 'btn-outline-secondary bg-white'
+                                }`}
+                                onClick={() => setQueryStatusFilter(status)}
+                            >
+                                {status}
+                                {status !== 'All' && (
+                                    <span className="ms-2 opacity-75 small">
+                                        ({staffQueries.filter(q => q.status === status).length})
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="p-0">
+                        {staffQueries.length > 0 ? (
+                            <div className="table-responsive">
+                                <table className="table table-hover align-middle mb-0">
+                                    <thead className="bg-light">
+                                        <tr>
+                                            <th className="px-4 py-3 text-muted small text-uppercase">Student</th>
+                                            <th className="py-3 text-muted small text-uppercase">Subject / Issue</th>
+                                            <th className="text-center py-3 text-muted small text-uppercase">Marks (Curr/Exp)</th>
+                                            <th className="text-center py-3 text-muted small text-uppercase">Status</th>
+                                            <th className="text-center py-3 text-muted small text-uppercase">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {staffQueries
+                                            .filter(q => queryStatusFilter === 'All' || q.status === queryStatusFilter)
+                                            .map((q, idx) => (
+                                            <tr key={idx}>
+                                                <td className="px-4 py-3">
+                                                    <div className="fw-bold">{q.studentName}</div>
+                                                    <div className="text-primary small">{q.rollno}</div>
+                                                </td>
+                                                <td className="py-3">
+                                                    <div className="fw-bold text-dark">{q.subjectName}</div>
+                                                    <div className="badge bg-light text-muted border small">{q.issueType}</div>
+                                                </td>
+                                                <td className="text-center py-3">
+                                                    <span className="text-danger small fw-bold">{q.currentMarks}</span>
+                                                    <i className="bi bi-arrow-right mx-2 text-muted"></i>
+                                                    <span className="text-success small fw-bold">{q.expectedMarks}</span>
+                                                </td>
+                                                <td className="text-center py-3">
+                                                    <span className={`badge rounded-pill px-3 py-2 ${
+                                                        q.status === 'Pending' ? 'bg-warning text-dark' :
+                                                        q.status === 'Reviewed' ? 'bg-info text-white' :
+                                                        q.status === 'Resolved' ? 'bg-success' : 'bg-danger'
+                                                    }`}>
+                                                        {q.status}
+                                                    </span>
+                                                </td>
+                                                <td className="text-center py-3">
+                                                    <button 
+                                                        className="btn btn-sm btn-primary rounded-pill px-3"
+                                                        onClick={() => {
+                                                            setReviewingQuery(q);
+                                                            setReviewForm({ status: q.status, staffComment: q.staffComment || '' });
+                                                            setShowReviewModal(true);
+                                                        }}
+                                                    >
+                                                        Review Query
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="p-5 text-center text-muted">
+                                <i className="bi bi-check-circle fs-1 d-block mb-3 opacity-25 text-success"></i>
+                                Great! No mark discrepancy queries to review at the moment.
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr className="my-5 opacity-10" />
+
         <h5 className="mb-4 fw-bold">Student Statistics</h5>
         <div className="row g-3">
           <div className="col-md-3">
@@ -785,7 +954,7 @@ const StaffDashboard = () => {
               </div>
               <div className="modal-body p-0">
                 <div className="px-3 py-2 bg-light border-bottom small text-muted">
-                  {activeCategory === 'risk' ? 'Total marks < 56 in ALL subjects' : activeCategory === 'medium' ? 'Total marks ≥ 70 in ALL subjects' : 'Total marks ≥ 85 in ALL subjects'}
+                  {activeCategory === 'risk' ? 'Marks < 60 in ANY subject' : activeCategory === 'medium' ? 'Total marks ≥ 70 in ALL subjects' : 'Total marks ≥ 85 in ALL subjects'}
                 </div>
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                   <ul className="list-group list-group-flush">
@@ -795,15 +964,25 @@ const StaffDashboard = () => {
                           key={s._id} 
                           className="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center"
                           style={{ cursor: 'pointer' }}
-                          onClick={() => {
-                            handleRollClick(s.rollno);
-                            // Keep category modal open or close it? 
-                            // Usually better to keep it or handle z-index.
-                          }}
+                          onClick={() => handleRollClick(s.rollno)}
                         >
                           <div>
-                            <span className="fw-bold text-dark d-block">{s.name}</span>
+                            <span className="fw-bold text-dark d-block">
+                              {s.name}
+                              {activeCategory === 'risk' && s.failedSubjects && (
+                                <span className="badge bg-danger ms-2" style={{ fontSize: '0.6rem' }}>
+                                  {s.failedSubjects.length} Subject(s) Risk
+                                </span>
+                              )}
+                            </span>
                             <small className="text-primary fw-bold">{s.rollno}</small>
+                            {activeCategory === 'risk' && s.failedSubjects && (
+                              <div className="mt-1">
+                                <small className="text-danger" style={{ fontSize: '0.7rem' }}>
+                                  Risk in: {s.failedSubjects.join(', ')}
+                                </small>
+                              </div>
+                            )}
                           </div>
                           <div className="text-end">
                             <span className="badge bg-light text-dark border">
@@ -962,6 +1141,78 @@ const StaffDashboard = () => {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Query Review Modal */}
+      {showReviewModal && reviewingQuery && (
+        <div 
+          className="modal show d-block" 
+          tabIndex="-1" 
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1070 }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+              <div className="modal-header bg-dark text-white border-0 py-3">
+                <h5 className="modal-title fw-bold">Review Discrepancy Query</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setShowReviewModal(false)}></button>
+              </div>
+              <form onSubmit={handleQueryUpdate}>
+                <div className="modal-body p-4 bg-light">
+                  <div className="card border-0 shadow-sm mb-4">
+                    <div className="card-body p-3">
+                        <div className="row g-2 small">
+                            <div className="col-6"><span className="text-muted">Student:</span> <span className="fw-bold">{reviewingQuery.studentName}</span></div>
+                            <div className="col-6"><span className="text-muted">Subject:</span> <span className="fw-bold">{reviewingQuery.subjectName} ({reviewingQuery.issueType})</span></div>
+                            <div className="col-12 mt-2">
+                                <div className="p-2 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded italic">
+                                    "{reviewingQuery.studentComment}"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <label className="form-label text-muted small fw-bold text-uppercase">Action / Status</label>
+                    <select 
+                      className="form-select border-0 shadow-sm fw-bold"
+                      value={reviewForm.status}
+                      onChange={(e) => setReviewForm({ ...reviewForm, status: e.target.value })}
+                      required
+                    >
+                      <option value="Pending">Keep Pending</option>
+                      <option value="Reviewed">Under Review</option>
+                      <option value="Resolved">Resolved / Marks Updated</option>
+                      <option value="Rejected">Reject Discrepancy</option>
+                    </select>
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label text-muted small fw-bold text-uppercase">Response to Student</label>
+                    <textarea 
+                      className="form-control border-0 shadow-sm"
+                      rows="3"
+                      placeholder="Explain your findings and the resolution..."
+                      value={reviewForm.staffComment}
+                      onChange={(e) => setReviewForm({ ...reviewForm, staffComment: e.target.value })}
+                      required
+                    ></textarea>
+                  </div>
+
+                  {reviewMessage && (
+                    <div className={`alert ${reviewMessage.includes('success') ? 'alert-success' : 'alert-danger'} py-2 mb-0`}>
+                      {reviewMessage}
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer border-0 p-4 pt-0 bg-light">
+                  <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => setShowReviewModal(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-dark rounded-pill px-4 fw-bold">Update Resolution</button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
