@@ -165,6 +165,28 @@ router.post('/academic-record', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/user/student-academic/:rollno
+// @desc    Get student academic record and prediction by rollno (Staff/Admin only)
+router.get('/student-academic/:rollno', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'staff' && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    // Find student to get their current semester
+    const student = await Student.findOne({ rollno: req.params.rollno });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    const record = await AcademicRecord.findOne({ rollno: req.params.rollno, semester: student.semester });
+    const prediction = await MLPredict.findOne({ rollno: req.params.rollno, semester: student.semester });
+
+    res.json({ student, record, prediction });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route   GET api/user/stats
 // @desc    Get stats (filtered by department for staff, global for admin)
 router.get('/stats', auth, async (req, res) => {

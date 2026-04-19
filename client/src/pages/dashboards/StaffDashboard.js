@@ -14,6 +14,9 @@ const StaffDashboard = () => {
   const [extraData, setExtraData] = useState({ cgpa: '', attendance: '' });
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [viewingStudent, setViewingStudent] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [loadingDetail, setLoadingDetail] = useState(false);
   const user = getAuth();
 
   useEffect(() => {
@@ -120,6 +123,30 @@ const StaffDashboard = () => {
         [field]: value,
       },
     }));
+  };
+
+  const handleRollClick = async (rollno) => {
+    setLoadingDetail(true);
+    setShowModal(true);
+    try {
+      const headers = { 'x-auth-token': getToken() };
+      const res = await fetch(`${API_BASE_URL}/api/user/student-academic/${rollno}`, {
+        headers,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setViewingStudent(data);
+      } else {
+        alert(data.message || 'Failed to fetch student details');
+        setShowModal(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error fetching details');
+      setShowModal(false);
+    } finally {
+      setLoadingDetail(false);
+    }
   };
 
   const handleSubmitAcademic = async (e) => {
@@ -571,8 +598,14 @@ const StaffDashboard = () => {
                     {processedStudents.length > 0 ? (
                       processedStudents.map((student) => (
                         <tr key={student._id}>
-                          <td>{student.rollno}</td>
-                          <td className="fw-bold text-primary">{student.name}</td>
+                          <td 
+                            className="text-primary fw-bold" 
+                            style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                            onClick={() => handleRollClick(student.rollno)}
+                          >
+                            {student.rollno}
+                          </td>
+                          <td className="fw-bold">{student.name}</td>
                           <td>{student.semester}</td>
                           <td>
                             <span className="badge bg-danger">
@@ -634,6 +667,143 @@ const StaffDashboard = () => {
           
         </div>
       </div>
+
+      {/* Student Details Modal */}
+      {showModal && (
+        <div 
+          className="modal show d-block" 
+          tabIndex="-1" 
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1050 }}
+        >
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg">
+              <div className="modal-header bg-primary text-white py-3">
+                <h5 className="modal-title fw-bold">
+                  <i className="bi bi-person-badge me-2"></i>
+                  Student Academic Profile
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close btn-close-white" 
+                  onClick={() => setShowModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body p-4 bg-light">
+                {loadingDetail ? (
+                  <div className="text-center py-5">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                    <p className="mt-3 text-muted fw-bold">Fetching comprehensive records...</p>
+                  </div>
+                ) : viewingStudent ? (
+                  <div>
+                    {/* Header Info */}
+                    <div className="card border-0 shadow-sm mb-4">
+                      <div className="card-body p-3">
+                        <div className="row text-center g-3">
+                          <div className="col-md-3 border-end">
+                            <small className="text-muted text-uppercase fw-bold d-block mb-1" style={{ fontSize: '0.65rem' }}>Full Name</small>
+                            <span className="fw-bold text-dark">{viewingStudent.student?.name}</span>
+                          </div>
+                          <div className="col-md-3 border-end">
+                            <small className="text-muted text-uppercase fw-bold d-block mb-1" style={{ fontSize: '0.65rem' }}>Roll Number</small>
+                            <span className="fw-bold text-primary">{viewingStudent.student?.rollno}</span>
+                          </div>
+                          <div className="col-md-3 border-end">
+                            <small className="text-muted text-uppercase fw-bold d-block mb-1" style={{ fontSize: '0.65rem' }}>Semester</small>
+                            <span className="fw-bold text-dark">SEM {viewingStudent.student?.semester}</span>
+                          </div>
+                          <div className="col-md-3">
+                            <small className="text-muted text-uppercase fw-bold d-block mb-1" style={{ fontSize: '0.65rem' }}>Department</small>
+                            <span className="badge bg-danger">{viewingStudent.student?.department}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Academic Marks Table */}
+                    <h6 className="fw-bold mb-3 text-secondary">
+                      <i className="bi bi-table me-2"></i>
+                      Subject-wise Performance
+                    </h6>
+                    <div className="table-responsive shadow-sm rounded mb-4 bg-white">
+                      <table className="table table-bordered table-hover mb-0 text-center align-middle">
+                        <thead className="table-dark">
+                          <tr>
+                            <th className="text-start ps-3">Subject Name</th>
+                            <th>Internals (40)</th>
+                            <th>Assignment (20)</th>
+                            <th>Practical (40)</th>
+                            <th className="table-primary text-primary fw-bold">Total (100)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {viewingStudent.record?.subjects?.map((sub, idx) => {
+                            const total = sub.internalMark + sub.assignmentMark + sub.practicalMark;
+                            return (
+                              <tr key={idx}>
+                                <td className="text-start ps-3 fw-bold small">{sub.name}</td>
+                                <td>{sub.internalMark}</td>
+                                <td>{sub.assignmentMark}</td>
+                                <td>{sub.practicalMark}</td>
+                                <td className="fw-bold text-primary bg-light">{total}</td>
+                              </tr>
+                            );
+                          })}
+                          {!viewingStudent.record?.subjects?.length && (
+                            <tr>
+                              <td colSpan="5" className="text-muted py-3">No academic marks recorded for this semester yet.</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Summary Stats */}
+                    <div className="row g-3">
+                      <div className="col-md-4">
+                        <div className="p-3 bg-white border rounded shadow-sm text-center">
+                          <small className="text-muted text-uppercase fw-bold d-block mb-2" style={{ fontSize: '0.65rem' }}>Previous CGPA</small>
+                          <h4 className="fw-bold text-dark mb-0">{viewingStudent.record?.previousSemCGPA || 'N/A'}</h4>
+                        </div>
+                      </div>
+                      <div className="col-md-4">
+                        <div className="p-3 bg-white border rounded shadow-sm text-center">
+                          <small className="text-muted text-uppercase fw-bold d-block mb-2" style={{ fontSize: '0.65rem' }}>Attendance</small>
+                          <h4 className="fw-bold text-info mb-0">{viewingStudent.record?.attendancePercentage ? `${viewingStudent.record.attendancePercentage}%` : 'N/A'}</h4>
+                        </div>
+                      </div>
+                      <div className="col-md-4">
+                        <div className="p-3 bg-white border rounded shadow-sm text-center" style={{ backgroundColor: '#f8f9ff !important', border: '1px solid #dee2ff !important' }}>
+                          <small className="text-muted text-uppercase fw-bold d-block mb-2" style={{ fontSize: '0.65rem' }}>Predicted CGPA</small>
+                          <h4 className={`fw-bold mb-0 ${viewingStudent.prediction?.predictedCGPA >= 8.0 ? 'text-success' : viewingStudent.prediction?.predictedCGPA >= 6.0 ? 'text-warning' : 'text-danger'}`}>
+                            {viewingStudent.prediction?.predictedCGPA ? Number(viewingStudent.prediction.predictedCGPA).toFixed(2) : 'N/A'}
+                          </h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-5">
+                    <i className="bi bi-exclamation-circle text-muted mb-3" style={{ fontSize: '2rem' }}></i>
+                    <p className="text-muted">No academic records found for this student.</p>
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer bg-light border-0">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary fw-bold px-4" 
+                  onClick={() => setShowModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
