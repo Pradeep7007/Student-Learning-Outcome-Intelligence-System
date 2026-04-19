@@ -17,6 +17,10 @@ const StaffDashboard = () => {
   const [viewingStudent, setViewingStudent] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [activeCategory, setActiveCategory] = useState(null); // 'risk', 'medium', 'high'
+
   const user = getAuth();
 
   useEffect(() => {
@@ -54,6 +58,44 @@ const StaffDashboard = () => {
       ? students.filter((s) => s.department === profile.department)
       : [];
   }, [profile, students]);
+
+  const categorized = React.useMemo(() => {
+    const risk = [];
+    const medium = [];
+    const high = [];
+
+    filteredStudents.forEach((s) => {
+      if (
+        s.academicRecord &&
+        s.academicRecord.subjects &&
+        s.academicRecord.subjects.length > 0
+      ) {
+        const subjectTotals = s.academicRecord.subjects.map(
+          (sub) => sub.internalMark + sub.assignmentMark + sub.practicalMark
+        );
+
+        // Rule: High Level (>= 85 in all subjects)
+        if (subjectTotals.every((total) => total >= 85)) {
+          high.push(s);
+          return;
+        }
+
+        // Rule: Medium Level (>= 70 in all subjects)
+        if (subjectTotals.every((total) => total >= 70)) {
+          medium.push(s);
+          return;
+        }
+
+        // Rule: At Risk (< 56 in all subjects)
+        if (subjectTotals.every((total) => total < 56)) {
+          risk.push(s);
+          return;
+        }
+      }
+    });
+
+    return { risk, medium, high };
+  }, [filteredStudents]);
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -650,6 +692,64 @@ const StaffDashboard = () => {
 
         <hr className="my-5 opacity-10" />
 
+        <div className="row g-4 mb-5">
+          {/* At Risk Summary Card */}
+          <div className="col-12 col-md-4">
+            <div 
+              className="card border-0 shadow-sm h-100 p-4 text-center" 
+              style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+              onClick={() => { setActiveCategory('risk'); setShowCategoryModal(true); }}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              <div className="rounded-circle bg-danger bg-opacity-10 text-danger mx-auto mb-3 d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
+                <i className="bi bi-exclamation-triangle-fill fs-3"></i>
+              </div>
+              <h5 className="fw-bold mb-1">At-Risk Students</h5>
+              <h2 className="fw-bold text-danger mb-0">{categorized.risk.length}</h2>
+              <small className="text-muted">Click to view list</small>
+            </div>
+          </div>
+
+          {/* Medium Level Summary Card */}
+          <div className="col-12 col-md-4">
+            <div 
+              className="card border-0 shadow-sm h-100 p-4 text-center" 
+              style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+              onClick={() => { setActiveCategory('medium'); setShowCategoryModal(true); }}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              <div className="rounded-circle bg-warning bg-opacity-10 text-warning mx-auto mb-3 d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
+                <i className="bi bi-graph-up fs-3"></i>
+              </div>
+              <h5 className="fw-bold mb-1">Medium Level</h5>
+              <h2 className="fw-bold text-warning mb-0" style={{ filter: 'brightness(0.8)' }}>{categorized.medium.length}</h2>
+              <small className="text-muted">Click to view list</small>
+            </div>
+          </div>
+
+          {/* High Level Summary Card */}
+          <div className="col-12 col-md-4">
+            <div 
+              className="card border-0 shadow-sm h-100 p-4 text-center" 
+              style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+              onClick={() => { setActiveCategory('high'); setShowCategoryModal(true); }}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              <div className="rounded-circle bg-success bg-opacity-10 text-success mx-auto mb-3 d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
+                <i className="bi bi-stars fs-3"></i>
+              </div>
+              <h5 className="fw-bold mb-1">High Level</h5>
+              <h2 className="fw-bold text-success mb-0">{categorized.high.length}</h2>
+              <small className="text-muted">Click to view list</small>
+            </div>
+          </div>
+        </div>
+
+        <hr className="my-5 opacity-10" />
+
         <h5 className="mb-4 fw-bold">Student Statistics</h5>
         <div className="row g-3">
           <div className="col-md-3">
@@ -668,12 +768,74 @@ const StaffDashboard = () => {
         </div>
       </div>
 
+      {/* Category Student List Modal */}
+      {showCategoryModal && activeCategory && (
+        <div 
+          className="modal show d-block" 
+          tabIndex="-1" 
+          style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)', zIndex: 1045 }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg">
+              <div className={`modal-header py-3 text-white ${activeCategory === 'risk' ? 'bg-danger' : activeCategory === 'medium' ? 'bg-warning text-dark' : 'bg-success'}`}>
+                <h5 className="modal-title fw-bold">
+                  {activeCategory === 'risk' ? 'At-Risk Students' : activeCategory === 'medium' ? 'Medium Level Students' : 'High Level Students'}
+                </h5>
+                <button type="button" className={`btn-close ${activeCategory === 'medium' ? '' : 'btn-close-white'}`} onClick={() => setShowCategoryModal(false)}></button>
+              </div>
+              <div className="modal-body p-0">
+                <div className="px-3 py-2 bg-light border-bottom small text-muted">
+                  {activeCategory === 'risk' ? 'Total marks < 56 in ALL subjects' : activeCategory === 'medium' ? 'Total marks ≥ 70 in ALL subjects' : 'Total marks ≥ 85 in ALL subjects'}
+                </div>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <ul className="list-group list-group-flush">
+                    {categorized[activeCategory].length > 0 ? (
+                      categorized[activeCategory].map((s) => (
+                        <li 
+                          key={s._id} 
+                          className="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center"
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => {
+                            handleRollClick(s.rollno);
+                            // Keep category modal open or close it? 
+                            // Usually better to keep it or handle z-index.
+                          }}
+                        >
+                          <div>
+                            <span className="fw-bold text-dark d-block">{s.name}</span>
+                            <small className="text-primary fw-bold">{s.rollno}</small>
+                          </div>
+                          <div className="text-end">
+                            <span className="badge bg-light text-dark border">
+                              {s.predictedCGPA ? Number(s.predictedCGPA).toFixed(2) : 'N/A'} CGPA
+                            </span>
+                            <i className="bi bi-chevron-right ms-2 text-muted"></i>
+                          </div>
+                        </li>
+                      ))
+                    ) : (
+                      <div className="p-5 text-center text-muted">
+                        <i className="bi bi-person-dash fs-1 d-block mb-3"></i>
+                        No students found in this category.
+                      </div>
+                    )}
+                  </ul>
+                </div>
+              </div>
+              <div className="modal-footer border-0 bg-light">
+                <button type="button" className="btn btn-secondary px-4 fw-bold" onClick={() => setShowCategoryModal(false)}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Student Details Modal */}
       {showModal && (
         <div 
           className="modal show d-block" 
           tabIndex="-1" 
-          style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1050 }}
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1060 }}
         >
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content border-0 shadow-lg">

@@ -62,11 +62,18 @@ router.get('/students-in-dept', auth, async (req, res) => {
     
     const rollnos = students.map(s => s.rollno);
     const predictions = await MLPredict.find({ rollno: { $in: rollnos } }).lean();
+    const records = await AcademicRecord.find({ rollno: { $in: rollnos } }).lean();
 
     const enrichedStudents = students.map(student => {
       // Find the prediction matching rollno and semester
       const pred = predictions.find(p => p.rollno === student.rollno && p.semester === student.semester);
-      return { ...student, predictedCGPA: pred ? pred.predictedCGPA : null };
+      const record = records.find(r => r.rollno === student.rollno && r.semester === student.semester);
+      
+      return { 
+        ...student, 
+        predictedCGPA: pred ? pred.predictedCGPA : null,
+        academicRecord: record || null
+      };
     });
 
     res.json(enrichedStudents);
